@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: node tests/workout_catalog.test.cjs
       - run: node tests/web_console.test.cjs
   esp32-build:
     runs-on: ubuntu-latest

@@ -1,0 +1,59 @@
+{
+  "id": "intervals",
+  "name": "Intervals",
+  "description": "Alternate faster efforts with easy recovery segments.",
+  "default_duration_minutes": 20,
+  "default_intensity_percent": 100,
+  "segments": [
+    {
+      "weight": 1,
+      "speed_mps": 1,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 3,
+      "grade_percent": 2
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 3,
+      "grade_percent": 2
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 3,
+      "grade_percent": 2
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1,
+      "grade_percent": 0
+    }
+  ]
+}

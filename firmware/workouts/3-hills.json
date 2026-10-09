@@ -1,0 +1,59 @@
+{
+  "id": "hills",
+  "name": "Rolling Hills",
+  "description": "Hold a steady pace through changing climbs, with a warm-up and cool-down.",
+  "default_duration_minutes": 20,
+  "default_intensity_percent": 100,
+  "segments": [
+    {
+      "weight": 1,
+      "speed_mps": 1,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 3
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 6
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 2
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 3
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 6
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 2
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1,
+      "grade_percent": 0
+    }
+  ]
+}

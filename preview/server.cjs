@@ -37,6 +37,8 @@ const server=http.createServer(async(req,res)=>{
       const [name,type]=files[req.url];
       return reply(res,200,fs.readFileSync(path.join(root,'firmware/components/web_console',name)),type);
     }
+    if(req.method==='GET'&&req.url==='/api/workouts')
+      return reply(res,200,JSON.stringify(await command('workouts')),'application/json');
     if(req.method==='GET'&&req.url==='/api/status')
       return reply(res,200,JSON.stringify(await command('status')),'application/json');
     if(req.method!=='POST'||req.headers['x-nordic-test']!=='1')return reply(res,404,'Not found');
@@ -51,7 +53,7 @@ const server=http.createServer(async(req,res)=>{
       const fields=body.split(' ');
       if(fields.length!==5||!/^[0-9a-f]{16}$/.test(fields[0])||!/^\d{1,10}$/.test(fields[1])||
          Number(fields[1])<1||Number(fields[1])>0xffffffff||
-         !['start','stop','targets','heartbeat','reset'].includes(fields[2])||
+         (!['start','stop','targets','heartbeat','reset'].includes(fields[2])&&!/^w:[a-z][a-z0-9-]{0,23}$/.test(fields[2]))||
          !fields.slice(3).every(v=>/^-?(?:\d+\.?\d*|\.\d+)$/.test(v)&&Number.isFinite(Number(v))))
         return reply(res,400,'Malformed command');
       const result=await command('command '+body);
