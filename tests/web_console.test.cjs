@@ -9,7 +9,8 @@ const document = { createElement:makeElement, hidden:false, addEventListener(){}
   if (!elements.has(id)) elements.set(id, makeElement());
   return elements.get(id);
 }};
-const context = vm.createContext({document,AbortController,setTimeout,clearTimeout,console,
+let browserNow=0;
+const context = vm.createContext({document,AbortController,setTimeout,clearTimeout,setInterval:()=>0,performance:{now:()=>browserNow},console,
   fetch:async()=>{throw new Error('No network expected');}});
 vm.runInContext(script, context);
 const run = code => vm.runInContext(code, context);
@@ -48,7 +49,7 @@ assert.equal(run('selectedWorkout'),'hills');
 assert.equal(run('draftSpeedMps'),2);
 assert.equal(elements.get('duration').disabled,true);
 assert.match(elements.get('workoutProgress').textContent,/Segment 3 \/ 10/);
-run('draftSpeedMps=4; render({...state,workout:{...state.workout,overridden:true}})');
+run('token="owner";draftSpeedMps=4; render({...state,workout:{...state.workout,overridden:true}})');
 assert.equal(run('draftSpeedMps'),4); // Polling preserves current manual adjustment.
 run('render({...state,requested_speed_mps:1.5,workout:{...state.workout,segment:3,overridden:false}})');
 assert.equal(run('draftSpeedMps'),1.5); // New segment replaces manual draft.
@@ -64,3 +65,15 @@ assert.equal(Number(elements.get('intensity').value),75);
 assert.match(elements.get('workoutDescription').textContent,/From JSON 2 segments/);
 assert.equal(run('workoutButtons.get("custom").textContent'),'Custom Climb');
 console.log('Custom catalog renders without preset-specific UI code.');
+
+run('render({...state,mode:"running",workout:{id:"hills",segment_count:10,intensity:1,active:true,complete:false,segment:0,elapsed_ms:1000,duration_ms:60000,segment_remaining_ms:5000,next_speed_mps:1.5,next_grade:1,overridden:false}})');
+browserNow+=1000;
+assert.equal(run('displayedWorkout().elapsed_ms'),2000);
+browserNow+=4000;
+assert.equal(run('displayedWorkout().elapsed_ms'),2500); // Freeze when confirmation is overdue.
+run('render({...state,workout:{...state.workout,elapsed_ms:5900,segment_remaining_ms:100}})');
+browserNow+=1000;
+assert.equal(run('displayedWorkout().elapsed_ms'),6000); // Never invent the next segment.
+run('unavailable()');
+assert.equal(run('displayedWorkout().elapsed_ms'),5900); // Offline uses confirmed device data.
+console.log('Display clock interpolation, stale-data bound, and segment boundary checks passed.');

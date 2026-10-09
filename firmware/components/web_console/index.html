@@ -57,6 +57,7 @@ const element=id=>document.getElementById(id);
 let token=null,sequence=0,state=null,online=false,busy=false,stopPending=false;
 let foregroundBusy=false,targetsPending=false,targetsTimer=null;
 let speedUnit='kmh',draftSpeedMps=0;
+let commandEpoch=0,queuedAction=null,statusReceivedAt=0,displayElapsed=0;
 let selectedWorkout='manual',lastWorkoutSegment='';
 let workoutCatalog=[];
 const workoutButtons=new Map([['manual',element('manual')]]);
@@ -139,13 +140,24 @@ function renderInclineProfile(w,active){
   element('profilePosition').textContent=active?Math.round(fraction*100)+'% complete':complete?'Complete':'Preview';
   element('profileDuration').textContent=Number.isFinite(duration)&&duration>0?clockText(duration):'Finish';
 }
-function workoutReadings(){
+function displayedWorkout(){
   const w=state?.workout;
+  if(!w?.active||!online)return w;
+  // Interpolate only the display, bounded by the last confirmed segment.
+  const age=Math.max(0,performance.now()-statusReceivedAt);
+  const delta=Math.min(age,1500,w.segment_remaining_ms);
+  const elapsed=Math.min(w.duration_ms,w.elapsed_ms+delta);
+  displayElapsed=Math.max(displayElapsed,elapsed);
+  const advance=Math.max(0,displayElapsed-w.elapsed_ms);
+  return {...w,elapsed_ms:displayElapsed,segment_remaining_ms:Math.max(0,w.segment_remaining_ms-advance)};
+}
+function workoutReadings(){
+  const w=displayedWorkout();
   const active=online&&w?.active;
   renderInclineProfile(w,active);
   element('workoutProgress').textContent=!online?'Workout status unavailable':active?
     (workoutCatalog.find(d=>d.id===w.id)?.name||w.id)+' · Segment '+(w.segment+1)+' / '+w.segment_count+' · '+clockText(w.segment_remaining_ms)+' in segment · '+clockText(w.duration_ms-w.elapsed_ms)+' remaining':
-    w?.complete?'Workout complete':selectedWorkout==='manual'?'Manual control':'Ready · Press Start to begin the warm-up';
+    state?.mode==='fault'?'Workout interrupted · Reset required':w?.complete?'Workout complete':selectedWorkout==='manual'?'Manual control':'Ready · Press Start to begin the warm-up';
   element('workoutNext').textContent=active?(w.segment+1===w.segment_count?'Next: finish and stop':
     'Next: '+(w.next_speed_mps*factors[speedUnit]).toFixed(1)+' '+unitNames[speedUnit]+' · '+w.next_grade.toFixed(1)+'% incline')+
     (w.overridden?' · Manual adjustment for this segment':''):'';
@@ -199,7 +211,7 @@ function controls(){
   toggle.disabled=!usable||!token||state.mode==='fault'||(!running&&foregroundBusy);
   element('reset').disabled=!usable||foregroundBusy||!token||state.mode!=='fault';
   for(const id of ['speed','speedSlider','speedUp','speedDown','grade','gradeSlider','gradeUp','gradeDown'])
-    element(id).disabled=!usable||!token||state.mode==='fault';
+    element(id).disabled=!usable||!token||foregroundBusy||state.mode==='fault';
   for(const button of workoutButtons.values())button.disabled=running||foregroundBusy;
   for(const id of ['duration','intensity'])element(id).disabled=running||foregroundBusy;
   element('claim').textContent=token?'Controls enabled':state?.session_active?'In use on another screen':'Enable controls';
@@ -207,6 +219,12 @@ function controls(){
 function render(next){
   if(!['idle','running','fault'].includes(next.mode)||!Number.isFinite(next.sample_age_ms)||
      next.sample_age_ms<0||next.sample_age_ms>1000)throw new Error('Stale status');
+  const previous=state;
+  if(!online||!next.workout?.active||!previous?.workout?.active||
+     previous.workout.id!==next.workout.id||next.workout.elapsed_ms<previous.workout.elapsed_ms)
+    displayElapsed=next.workout?.elapsed_ms||0;
+  else displayElapsed=Math.max(displayElapsed,next.workout.elapsed_ms);
+  statusReceivedAt=performance.now();
   state=next;online=true;
 
   element('connection').textContent=state.local_preview?'Local preview connected':'Connected';
@@ -234,12 +252,20 @@ function render(next){
     if(w?.complete)element('message').textContent='Workout complete. Speed and incline requests cleared.';
     element('grade').value='0';element('gradeSlider').value='0';
   }
+  if(!token){
+    draftSpeedMps=state.requested_speed_mps;chooseUnit(speedUnit);
+    element('grade').value=String(state.requested_grade_percent);
+    element('gradeSlider').value=String(state.requested_grade_percent);
+  }
+  if(state.mode==='fault')element('message').textContent='Session interrupted. Enable controls if needed, then reset the fault. Starting again is always manual.';
+  else if(state.mode==='running'&&!token)element('message').textContent='Viewing an active session. This page does not own control; if the original page was closed, the session will stop.';
+  else if(previous?.mode==='running'&&state.mode==='idle'&&!w?.complete)element('message').textContent='Session stopped. Press Start when ready.';
   lastWorkoutSegment=key;
   workoutReadings();
   controls();
 }
 function unavailable(){
-  online=false;token=null;stopPending=false;clearPendingTargets();
+  online=false;token=null;stopPending=false;queuedAction=null;clearPendingTargets();
   element('connection').textContent='Controller unavailable';element('dot').className='';
   element('mode').textContent='Unknown';element('uptime').textContent='—';
   workoutReadings();speedReadings();element('acceptedGrade').textContent='—';
@@ -248,15 +274,20 @@ function unavailable(){
 }
 async function request(path,options={}){
   const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),2000);
-  try{return await fetch(path,{...options,cache:'no-store',signal:abort.signal});}
+  try{
+    const response=await fetch(path,{...options,cache:'no-store',signal:abort.signal});
+    const body=await response.text(); // Timeout covers the body too, not just headers.
+    return {ok:response.ok,status:response.status,json:async()=>JSON.parse(body),text:async()=>body};
+  }
   finally{clearTimeout(timer);}
 }
 async function act(action){
-  if(action==='stop')clearPendingTargets();
+  if(action==='stop'){clearPendingTargets();queuedAction=null;}
   if(action==='targets'&&(!token||state?.mode!=='running'))return;
   if(busy){
     if(action==='stop')stopPending=true;
     else if(action==='targets'&&!stopPending)targetsPending=true;
+    else if(!['heartbeat','targets'].includes(action)&&!stopPending)queuedAction=action;
     return;
   }
   if(action==='targets')targetsPending=false;
@@ -276,6 +307,7 @@ async function act(action){
     }
   }
   if(action!=='claim'&&!token)return;
+  commandEpoch++;
   busy=true;foregroundBusy=!['heartbeat','targets'].includes(action);controls();
   try{
     const options={method:'POST',headers:{'X-Nordic-Test':'1'}};
@@ -302,16 +334,20 @@ async function act(action){
   finally{
     busy=false;foregroundBusy=false;controls();
     if(stopPending){stopPending=false;clearPendingTargets();void act('stop');}
+    else if(queuedAction){const next=queuedAction;queuedAction=null;void act(next);}
     else if(targetsPending){targetsPending=false;void act('targets');}
   }
 }
 async function poll(){
+  const epoch=commandEpoch;
   try{
+    if(busy)return;
     const response=await request('/api/status');
+    if(epoch!==commandEpoch||busy)return;
     if(!response.ok)throw new Error('Status unavailable');
     render(await response.json());
     if(token&&!document.hidden&&!busy)await act('heartbeat');
-  }catch(error){unavailable();}
+  }catch(error){if(epoch===commandEpoch&&!busy)unavailable();}
   finally{setTimeout(poll,500);}
 }
 for(const unit of ['kmh','mph'])element(unit).addEventListener('click',()=>chooseUnit(unit));
@@ -346,6 +382,7 @@ async function loadWorkouts(){
   }catch(error){element('workoutDescription').textContent='Workouts unavailable. Refresh to retry; manual control is available.';}
   poll();
 }
+setInterval(()=>{if(online&&state?.workout?.active&&!document.hidden)workoutReadings();},100);
 loadWorkouts();
 </script>
 </html>
