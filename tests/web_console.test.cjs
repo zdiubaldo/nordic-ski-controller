@@ -17,10 +17,12 @@ assert.equal(elements.get('claim').disabled,false);
 assert.equal(elements.get('start').disabled,true);
 run('token="123"; state.session_active=true; controls()');
 assert.equal(elements.get('start').disabled,false);
-run('state.mode="running";controls()');
-assert.equal(elements.get('apply').disabled,false);
+run('busy=true;foregroundBusy=false;controls()');
+assert.equal(elements.get('start').disabled,false); // Heartbeats must not blink Start.
+run('busy=false;state.mode="running";controls()');
+assert.equal(elements.get('speedUp').disabled,false);
 run('unavailable()');
-assert.equal(elements.get('apply').disabled,true);
+assert.equal(elements.get('speedUp').disabled,true);
 assert.equal(run('token'),null);
 run('render({mode:"fault",software_test:true,session_active:false,sample_age_ms:0,uptime_ms:100,requested_speed_mps:0,requested_grade_percent:0,fault:1})');
 assert.equal(elements.get('start').disabled,true);

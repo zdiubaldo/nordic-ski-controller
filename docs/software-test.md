@@ -7,7 +7,7 @@ Enable `CONFIG_NORDIC_SOFTWARE_TEST` in a local build to exercise controller log
 1. Join the controller's network and open or refresh http://192.168.4.1/.
 2. Confirm the software-test / physical-outputs-disabled notice.
 3. Select **Enable controls**, then **Start**. Start always begins at zero requests.
-4. Enter speed and incline and select **Apply settings**. The status card shows the requests acknowledged by the controller, not measured speed or angle.
+4. Enter speed and incline while running; changes apply automatically. The status card shows the requests acknowledged by the controller, not measured speed or angle.
 5. Select **Stop** to clear requests and return to idle.
 6. To test connection loss, start a test, set nonzero requests, then disconnect tablet Wi-Fi. After three seconds without commands the ESP32 clears requests, latches a timeout fault, and expires ownership. Reconnect, take control, reset the fault, then deliberately start again. No previous targets are restored.
 
@@ -23,4 +23,4 @@ The existing HTTP interface adds `POST /api/test/claim` and `POST /api/test/comm
 
 C tests cover disabled mode, ownership, replay, invalid setpoints, heartbeat renewal, stop, deadline boundaries, lease loss, and deliberate reset/restart. Actual tablet behavior must also be checked against the flashed board.
 
-The tablet dashboard supports both km/h and mph. Switching units keeps the speed request unchanged; the secondary reading shows the other unit. Sliders and +/− controls edit pending settings, while Apply settings explicitly sends them to the controller. Accepted readings are separate from pending values. The fixed bottom action bar keeps Start, Apply settings, and Stop available while scrolling.
+The tablet dashboard supports both km/h and mph. Switching units keeps the speed request unchanged; the secondary reading shows the other unit. Sliders and +/− controls send changes automatically while running, coalescing rapid adjustments for 180 ms. Stop takes priority over queued adjustments. Accepted readings are separate from pending values. The fixed bottom action bar keeps Start and Stop available while scrolling.

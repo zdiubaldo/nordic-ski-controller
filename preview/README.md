@@ -13,6 +13,6 @@ cc -std=c11 -Wall -Wextra -Werror \
 node preview/server.cjs
 ```
 
-Open http://127.0.0.1:8766/. Enable controls, Start, adjust speed/incline, and Apply settings. Stop clears requests. Closing the page stops heartbeats, so an active session faults after three seconds. Reopening does not restart it; enable controls, reset the fault, then Start.
+Open http://127.0.0.1:8766/. Enable controls, Start, adjust speed/incline, and changes apply automatically while running. Stop clears requests. Closing the page stops heartbeats, so an active session faults after three seconds. Reopening does not restart it; enable controls, reset the fault, then Start.
 
 The preview listens only on localhost. State lives in memory and resets when the server restarts. Keep only one controlling tab open. The C loop checks deadlines every 20 ms independently of page requests; the HTTP adapter is preview-only and does not emulate the ESP32 radio or electrical behavior.
