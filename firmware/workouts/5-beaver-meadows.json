@@ -1,0 +1,49 @@
+{
+  "id": "breck-beaver-meadows",
+  "name": "Beaver Meadows · Breckenridge",
+  "description": "Trail-inspired · Published trail: 4 km. Estimated incline profile, not a GPS recreation. Workout duration and pace are adjustable.",
+  "default_duration_minutes": 30,
+  "default_intensity_percent": 100,
+  "segments": [
+    {
+      "weight": 2,
+      "speed_mps": 1,
+      "grade_percent": 0
+    },
+    {
+      "weight": 3,
+      "speed_mps": 1.8,
+      "grade_percent": 1
+    },
+    {
+      "weight": 3,
+      "speed_mps": 2,
+      "grade_percent": 2
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1.7,
+      "grade_percent": 3
+    },
+    {
+      "weight": 3,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1.7,
+      "grade_percent": 3.5
+    },
+    {
+      "weight": 3,
+      "speed_mps": 2,
+      "grade_percent": 1.5
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1,
+      "grade_percent": 0
+    }
+  ]
+}

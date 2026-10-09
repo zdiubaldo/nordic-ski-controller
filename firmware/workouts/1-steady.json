@@ -1,0 +1,59 @@
+{
+  "id": "steady",
+  "name": "Steady",
+  "description": "Warm up, settle into an even pace, then cool down.",
+  "default_duration_minutes": 20,
+  "default_intensity_percent": 100,
+  "segments": [
+    {
+      "weight": 1,
+      "speed_mps": 1,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1.5,
+      "grade_percent": 0
+    },
+    {
+      "weight": 1,
+      "speed_mps": 1,
+      "grade_percent": 0
+    }
+  ]
+}

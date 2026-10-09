@@ -71,3 +71,7 @@ Before flashing, save the current 4 MB flash to a private location. Local backup
 ## Software-only control test
 
 Enable **Nordic Wi-Fi status page → Enable software-only control test** for the Hosyond bench build. It defaults off. This exercises the existing C controller with test limits and never initializes GPIO/relay outputs. See [test workflow and timeout behavior](../docs/software-test.md).
+
+## Editing workouts
+
+See [workout definitions](workouts/README.md). Run `node tools/generate-workouts.cjs` from the repository root after adding, editing, or removing JSON files. Commit the generated header and manifest with the definitions. Firmware builds reject stale definitions; no Node runtime is needed on the ESP32 or inside the ESP-IDF build container.

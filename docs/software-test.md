@@ -24,3 +24,11 @@ The existing HTTP interface adds `POST /api/test/claim` and `POST /api/test/comm
 C tests cover disabled mode, ownership, replay, invalid setpoints, heartbeat renewal, stop, deadline boundaries, lease loss, and deliberate reset/restart. Actual tablet behavior must also be checked against the flashed board.
 
 The tablet dashboard supports both km/h and mph. Switching units keeps the speed request unchanged; the secondary reading shows the other unit. Sliders and +/− controls send changes automatically while running, coalescing rapid adjustments for 180 ms. Stop takes priority over queued adjustments. Accepted readings are separate from pending values. The fixed bottom action button shows Start while idle and changes to a red Stop only when the controller confirms it is running. It is disabled when disconnected or faulted; fault reset remains separate.
+
+## Preset sessions
+
+The existing authenticated command endpoint also accepts `w:<id>` (for example `w:hills`), where the ID must exist in the compiled JSON catalog. These actions start a workout from idle; the two numeric fields specify whole duration minutes (1–120) and intensity percent (50–150). All commands retain the existing owner token and increasing sequence requirements. Invalid settings and attempts to start while running are rejected.
+
+The shared C runner chooses a segment using its relative duration weight using elapsed monotonic time. `targets` overrides only the current segment; a segment transition restores the preset. Automatic transitions do not renew the command timeout. Stop, faults, and expired ownership cancel the workout. Finishing the last segment returns to idle with zero requested speed and grade. A new Start always starts from the beginning.
+
+Status includes a `workout` object with stable string preset ID (`manual` for manual mode), segment count, active/complete flags, zero-based segment, elapsed and duration milliseconds, segment time remaining, intensity multiplier, next speed/grade, and manual override flag. The UI displays speed in the selected unit while the protocol retains m/s.

@@ -7,18 +7,48 @@
 :root{color-scheme:dark;font:16px system-ui,-apple-system,sans-serif;background:#0c1824;color:#f5f8fb;--blue:#16ade5;--muted:#9eb2c4;--line:#2c4052}*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{touch-action:manipulation;cursor:pointer}button:disabled{opacity:.36;cursor:default}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #75d7ff;outline-offset:4px}main{max-width:1120px;margin:auto;padding:28px 32px}.header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:24px}.identity{display:flex;align-items:center;gap:22px}.logo{width:96px;height:60px;object-fit:contain}.divider{height:42px;width:1px;background:var(--line)}.eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--blue)}h1{font-size:23px;letter-spacing:-.04em;margin:4px 0}h2{font-size:19px;margin:0}.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}#dot{width:8px;height:8px;background:#e6ac58;border-radius:50%}#dot.online{background:#69dbb0}.hero{position:relative;min-height:145px;border-radius:18px;overflow:hidden;background:#152a3c;margin-bottom:24px;display:flex;align-items:center;padding:26px}.hero-photo{position:absolute;right:0;top:0;width:50%;height:100%;object-fit:cover;object-position:50% 36%;opacity:.75}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#152a3c 40%,transparent 100%)}.hero-copy{position:relative;z-index:1;max-width:75%}.hero-copy h2{font-size:28px;font-weight:600;letter-spacing:-.03em;margin:7px 0}.hero-copy p{color:#bdcddb;font-size:14px;margin:0}.badge{display:inline-flex;align-items:center;gap:7px;border:1px solid #527086;background:#112638aa;border-radius:30px;font-size:11px;padding:6px 10px;color:#d6e3ec}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px}.mode{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}#mode{color:#fff;text-transform:capitalize;font-weight:600}.quiet{border:1px solid #436078;background:transparent;color:#d9eaf5;border-radius:10px;padding:11px 16px;min-height:44px;font-size:14px}.panels{display:grid;grid-template-columns:1fr 1fr;gap:20px}.panel{background:#142536;border:1px solid var(--line);border-radius:18px;padding:26px}.panel-heading{display:flex;justify-content:space-between;align-items:center}.index{font-size:12px;letter-spacing:.1em;color:#7792a7}.reading{display:flex;align-items:baseline;gap:8px;margin:16px 0 4px}.reading strong{font-size:76px;line-height:1.15;letter-spacing:-.065em;font-weight:500;font-variant-numeric:tabular-nums}.reading span{color:var(--muted);font-size:18px}.caption{font-size:12px;color:var(--muted);margin:0 0 26px}.setpoint{display:grid;grid-template-columns:56px 1fr 56px;gap:12px;align-items:center}.step{height:56px;border:1px solid #3b566d;background:#203a50;border-radius:12px;color:#f5f8fb;font-size:28px}.number-wrap{text-align:center}.number-wrap label{display:block;font-size:11px;color:#a7c0d3;margin-bottom:4px}.number-wrap input{width:100%;font-size:28px;font-weight:600;background:transparent;border:0;color:#fff;text-align:center;font-variant-numeric:tabular-nums;appearance:textfield}.number-wrap input::-webkit-inner-spin-button{appearance:none}.slider{width:100%;accent-color:var(--blue);height:40px;margin:18px 0 0;cursor:pointer}.scale{display:flex;justify-content:space-between;color:#7f9bb0;font-size:12px}.actions{display:grid;grid-template-columns:1fr;gap:14px;margin:22px 0 12px}.primary{min-height:64px;border:0;border-radius:12px;font-size:18px;font-weight:700}.start{background:#1ab2e8;color:#041d2b}.apply{background:#26475f;border:1px solid #406782;color:#e6f5ff}.stop{background:#bc423e;color:white}.feedback{min-height:26px;color:#a9c3d5;font-size:14px;margin:12px 2px}.bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid var(--line);margin-top:20px;padding-top:18px}.hint{color:#869fb2;font-size:12px;line-height:1.6;max-width:680px;margin:0}details{margin-top:24px;color:#8ba4b8;font-size:12px}summary{cursor:pointer;min-height:30px}#detail{line-height:1.6}footer{display:flex;justify-content:space-between;margin-top:24px;color:#617f97;font-size:11px;letter-spacing:.04em}@media(max-width:650px){main{padding:20px 16px}.header{align-items:flex-start;gap:8px}.identity{gap:12px}.logo{width:70px;height:48px}.divider{display:none}h1{font-size:18px}.eyebrow{font-size:9px}.status{font-size:11px;padding-top:8px}.hero{min-height:130px;padding:20px}.hero-copy h2{font-size:25px}.hero-copy p{font-size:12px;max-width:220px}.hero-photo{width:60%}.panels{gap:12px}.panel{padding:18px 12px}.reading strong{font-size:54px}.reading span{font-size:13px}.setpoint{grid-template-columns:40px 1fr 40px;gap:4px}.step{height:48px;font-size:24px}.number-wrap input{font-size:23px}.panel-heading h2{font-size:17px}.index{display:none}.caption{font-size:10px;margin-bottom:20px}.actions{gap:8px}.primary{font-size:15px;min-height:60px}.bottom{align-items:flex-start}}@media(max-width:370px){.panels{grid-template-columns:1fr}.reading strong{font-size:64px}.status{max-width:85px}.actions{grid-template-columns:1fr}.stop{grid-column:1/-1}}
 .units{display:flex;background:#142536;border:1px solid var(--line);border-radius:9px;padding:3px}.units button{border:0;border-radius:6px;background:transparent;color:#91a9bd;padding:8px 12px;font-size:13px;min-height:38px}.units button[aria-pressed="true"]{background:#325771;color:white}@media(max-width:450px){.toolbar{flex-wrap:wrap}.toolbar .mode{margin-left:auto}.toolbar>.quiet{width:100%}}
 main{padding-bottom:120px}.actions{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(1056px,calc(100% - 32px));margin:0;padding:14px 0 18px;background:#0c1824;z-index:5;box-shadow:0 -14px 20px #0c1824}.primary{min-height:60px}@media(max-width:370px){main{padding-bottom:180px}}
+
+[hidden]{display:none!important}.workouts{margin-bottom:20px}.workout-options{display:flex;flex-wrap:nowrap;gap:10px;margin:18px 0;overflow-x:auto;padding:4px 4px 12px;scroll-snap-type:x proximity;scroll-padding:4px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#436078 transparent}.workout-options button{flex:0 0 auto;white-space:nowrap;scroll-snap-align:start}.workout-options button[aria-pressed="true"]{background:#325771;border-color:#16ade5;color:white}.workout-settings{display:flex;flex-wrap:wrap;gap:20px;margin:16px 0}.workout-settings label{font-size:13px;color:#9eb2c4}.workout-settings input{display:block;width:125px;background:#203a50;color:white;border:1px solid #436078;border-radius:8px;padding:10px;margin-top:6px}.workouts p{color:#a9c3d5;font-size:14px;line-height:1.5}progress{width:100%;height:14px;accent-color:#16ade5}#workoutProgress{font-variant-numeric:tabular-nums}
+.incline-profile{margin-top:22px}.profile-heading{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#9eb2c4;letter-spacing:.06em;margin-bottom:8px}.incline-profile svg{display:block;width:100%;height:120px;margin-bottom:8px}
+.incline-profile{background:radial-gradient(ellipse at 50% 100%,#16394b 0%,#102130 75%);border:1px solid #294457;border-radius:16px;padding:18px 18px 12px;overflow:hidden}.profile-heading{align-items:center;margin-bottom:18px}.profile-heading>span:first-child{font-size:15px;font-weight:600;letter-spacing:-.02em;color:#e7f4f9}.profile-heading>span:last-child{font-size:10px;color:#7495a9;letter-spacing:.12em}.incline-profile svg{height:130px;overflow:visible}.incline-profile .scale{font-size:11px;margin-top:12px;color:#7898aa}#profilePosition{color:#84e6d5;font-weight:600}#profileDot{filter:drop-shadow(0 0 6px #65e7ce)}
 </style>
 <main>
 <header class="header"><div class="identity"><img class="logo" src="/assets/logo.svg" alt="Team Summit Colorado"><span class="divider"></span><div><div class="eyebrow">Team Summit Nordic</div><h1>Training controller</h1></div></div><div class="status" role="status" aria-live="polite"><span id="dot"></span><span id="connection">Connecting…</span></div></header>
 <section class="hero"><img class="hero-photo" src="/assets/hero.jpg" alt="Nordic skiing at Team Summit"><div class="hero-copy"><span class="badge" id="outputNotice">Physical outputs disabled</span><h2>Your pace. Your climb.</h2><p>Set your speed and incline from one place.</p></div></section>
 <div class="toolbar"><div class="units" role="group" aria-label="Speed units"><button id="kmh" aria-pressed="true">km/h</button><button id="mph" aria-pressed="false">mph</button></div><div class="mode">Session <span id="mode">Connecting</span></div><button class="quiet" id="claim" disabled>Enable controls</button></div>
+<section class="panel workouts" aria-label="Workout selection">
+<div class="panel-heading"><h2>Your workout</h2><span class="index">PRESET SESSIONS</span></div>
+<div class="workout-options" id="workoutOptions" role="group" aria-label="Workout"><button class="quiet" id="manual" aria-pressed="true">Manual</button></div>
+<p id="workoutDescription">Set your own speed and incline.</p>
+<div class="workout-settings" id="workoutSettings" hidden><label for="duration">Duration · minutes<input id="duration" type="number" min="1" max="120" step="1" value="20"></label><label for="intensity">Intensity · %<input id="intensity" type="number" min="50" max="150" step="5" value="100"></label></div>
+<div id="workoutBar" class="incline-profile" hidden>
+<div class="profile-heading"><span>Your terrain</span><span id="profileScale">INCLINE · 0–10%</span></div>
+<svg id="inclineChart" viewBox="0 0 800 140" preserveAspectRatio="none" role="img" aria-label="Workout incline profile">
+<defs>
+<linearGradient id="terrainFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#37bbd7" stop-opacity=".3"/><stop offset="1" stop-color="#37bbd7" stop-opacity=".02"/></linearGradient>
+<linearGradient id="terrainDone" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#4de3ce" stop-opacity=".65"/><stop offset="1" stop-color="#16ade5" stop-opacity=".08"/></linearGradient>
+<linearGradient id="terrainStroke"><stop stop-color="#24b6e6"/><stop offset="1" stop-color="#79efce"/></linearGradient>
+<clipPath id="profileClip"><rect id="profileClipRect" x="0" y="0" width="0" height="140"/></clipPath>
+</defs>
+<path d="M 0 16 H 800 M 0 72 H 800 M 0 128 H 800" stroke="#517389" stroke-opacity=".15" stroke-dasharray="2 8" fill="none"/>
+<path id="profileArea" fill="url(#terrainFill)"/>
+<path id="profileDone" fill="url(#terrainDone)" clip-path="url(#profileClip)"/>
+<path id="profileLine" fill="none" stroke="url(#terrainStroke)" stroke-opacity=".8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+<line id="profileCursor" x1="0" x2="0" y1="8" y2="132" stroke="#9bfce2" stroke-opacity=".5" stroke-dasharray="3 5" vector-effect="non-scaling-stroke"/>
+<circle id="profileHalo" r="13" fill="#6cf3d8" fill-opacity=".12"/>
+<circle id="profileDot" r="5" fill="#dcfff5" stroke="#6cf3d8" stroke-width="2"/>
+</svg>
+<div class="scale"><span>Start</span><span id="profilePosition">Preview</span><span id="profileDuration"></span></div>
+</div>
+<p id="workoutProgress" role="status">Manual control</p><p id="workoutNext"></p>
+</section>
 <div class="panels">
 <section class="panel" aria-label="Speed control"><div class="panel-heading"><h2>Speed</h2><span class="index">01 / PACE</span></div><div class="reading"><strong id="acceptedSpeed">—</strong><span id="speedUnit">km/h</span></div><p class="caption">Accepted request · <span id="speedAlternate">— mph</span></p><div class="setpoint"><button class="step" id="speedDown" aria-label="Decrease speed" disabled>−</button><div class="number-wrap"><label for="speed">SET SPEED</label><input id="speed" type="number" min="0" max="18" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="speedUp" aria-label="Increase speed" disabled>+</button></div><input class="slider" id="speedSlider" type="range" min="0" max="18" step="0.5" value="0" aria-label="Speed slider" disabled><div class="scale"><span>0</span><span id="speedMax">18 km/h</span></div></section>
 <section class="panel" aria-label="Incline control"><div class="panel-heading"><h2>Incline</h2><span class="index">02 / CLIMB</span></div><div class="reading"><strong id="acceptedGrade">—</strong><span>% grade</span></div><p class="caption">Controller-accepted request</p><div class="setpoint"><button class="step" id="gradeDown" aria-label="Decrease incline" disabled>−</button><div class="number-wrap"><label for="grade">SET INCLINE</label><input id="grade" type="number" min="0" max="10" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="gradeUp" aria-label="Increase incline" disabled>+</button></div><input class="slider" id="gradeSlider" type="range" min="0" max="10" step="0.5" value="0" aria-label="Incline slider" disabled><div class="scale"><span>0%</span><span>10%</span></div></section>
 </div>
 <div class="actions"><button class="primary start" id="runToggle" disabled>▶ Start</button></div>
 <p class="feedback" id="message" role="status" aria-live="polite">Waiting for controller.</p>
-<div class="bottom"><p class="hint">Start begins at zero. Speed and incline changes apply automatically while running.<br>Development limits only · No machine movement or measured speed.</p><button class="quiet" id="reset" disabled>Reset fault</button></div>
+<div class="bottom"><p class="hint">Manual starts at zero. Presets start at their warm-up speed and stop when finished. Changes during a workout apply to the current segment.<br>Development limits only · No machine movement or measured speed.</p><button class="quiet" id="reset" disabled>Reset fault</button></div>
 <details><summary>Connection details</summary><p id="detail">Waiting for a live status report.</p><p>Controller uptime: <span id="uptime">—</span></p></details>
 <footer><span>TEAM SUMMIT COLORADO</span><span>LOCAL WI-FI · NO INTERNET REQUIRED</span></footer>
 </main>
@@ -27,8 +57,99 @@ const element=id=>document.getElementById(id);
 let token=null,sequence=0,state=null,online=false,busy=false,stopPending=false;
 let foregroundBusy=false,targetsPending=false,targetsTimer=null;
 let speedUnit='kmh',draftSpeedMps=0;
+let selectedWorkout='manual',lastWorkoutSegment='';
+let workoutCatalog=[];
+const workoutButtons=new Map([['manual',element('manual')]]);
 const factors={kmh:3.6,mph:2.2369362920544};
 const unitNames={kmh:'km/h',mph:'mph'};
+function setWorkoutCatalog(catalog){
+  workoutCatalog=catalog;
+  for(const w of catalog){
+    const button=document.createElement('button');
+    button.className='quiet';button.textContent=w.name;
+    button.setAttribute('aria-pressed','false');
+    button.addEventListener('click',()=>chooseWorkout(w.id));
+    element('workoutOptions').appendChild(button);
+    workoutButtons.set(w.id,button);
+  }
+}
+function chooseWorkout(name,defaults=true){
+  const definition=workoutCatalog.find(w=>w.id===name);
+  if(name!=='manual'&&!definition)return;
+  selectedWorkout=name;
+  for(const [id,button] of workoutButtons)button.setAttribute('aria-pressed',String(id===name));
+  element('workoutSettings').hidden=name==='manual';
+  element('workoutDescription').textContent=definition?
+    definition.description+' '+definition.segments.length+' segments. Intensity scales both speed and incline.':'Set your own speed and incline.';
+  if(definition&&defaults){
+    element('duration').value=definition.default_duration_minutes;
+    element('intensity').value=definition.default_intensity_percent;
+  }
+  workoutReadings();
+}
+function clockText(ms){const seconds=Math.max(0,Math.ceil(ms/1000));return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');}
+function renderInclineProfile(w,active){
+  const definition=workoutCatalog.find(d=>d.id===(active?w.id:selectedWorkout));
+  element('workoutBar').hidden=!definition;
+  if(!definition)return;
+  const complete=online&&w?.complete&&w.id===selectedWorkout;
+  const intensity=active||complete?w.intensity:Number(element('intensity').value)/100;
+  const scale=Number.isFinite(intensity)?Math.min(1.5,Math.max(.5,intensity)):1;
+  const duration=active||complete?w.duration_ms:Number(element('duration').value)*60000;
+  const fraction=active?Math.max(0,Math.min(1,w.elapsed_ms/w.duration_ms)):complete?1:0;
+  const total=definition.segments.reduce((sum,segment)=>sum+segment.weight,0);
+  let weight=0,line='',markerY=128;
+  const points=[];
+  definition.segments.forEach((segment,index)=>{
+    const left=800*weight/total;
+    weight+=segment.weight;
+    const right=800*weight/total;
+    const grade=active&&w.overridden&&index===w.segment?state.requested_grade_percent:segment.grade_percent*scale;
+    const y=128-112*Math.min(10,Math.max(0,grade))/10;
+    points.push([left,y],[right,y]);
+    if(active&&index===w.segment)markerY=y;
+  });
+  // Round the corners slightly while preserving segment widths and plateaus.
+  line='M'+points[0].join(' ');
+  for(let i=1;i<points.length-1;i++){
+    const prev=points[i-1],point=points[i],next=points[i+1];
+    const before=Math.hypot(point[0]-prev[0],point[1]-prev[1]);
+    const after=Math.hypot(next[0]-point[0],next[1]-point[1]);
+    if(!before||!after){line+=' L'+point.join(' ');continue;}
+    const radius=Math.min(6,before/2,after/2);
+    const entry=point.map((v,j)=>v+(prev[j]-v)*radius/before);
+    const exit=point.map((v,j)=>v+(next[j]-v)*radius/after);
+    line+=' L'+entry.join(' ')+' Q'+point.join(' ')+' '+exit.join(' ');
+  }
+  line+=' L'+points[points.length-1].join(' ');
+  for(const id of ['profileDot','profileHalo']){
+    element(id).setAttribute('cx',String(800*fraction));
+    element(id).setAttribute('cy',String(markerY));
+    element(id).setAttribute('visibility',active?'visible':'hidden');
+  }
+  const area=line+'L800 136 L0 136 Z';
+  element('profileArea').setAttribute('d',area);
+  element('profileDone').setAttribute('d',area);
+  element('profileLine').setAttribute('d',line);
+  element('profileClipRect').setAttribute('width',String(800*fraction));
+  element('profileCursor').setAttribute('x1',String(800*fraction));
+  element('profileCursor').setAttribute('x2',String(800*fraction));
+  element('profileCursor').setAttribute('visibility',active?'visible':'hidden');
+  element('inclineChart').setAttribute('aria-label',definition.name+' incline profile, '+Math.round(fraction*100)+'% complete. Height shows incline; width shows segment time.');
+  element('profilePosition').textContent=active?Math.round(fraction*100)+'% complete':complete?'Complete':'Preview';
+  element('profileDuration').textContent=Number.isFinite(duration)&&duration>0?clockText(duration):'Finish';
+}
+function workoutReadings(){
+  const w=state?.workout;
+  const active=online&&w?.active;
+  renderInclineProfile(w,active);
+  element('workoutProgress').textContent=!online?'Workout status unavailable':active?
+    (workoutCatalog.find(d=>d.id===w.id)?.name||w.id)+' · Segment '+(w.segment+1)+' / '+w.segment_count+' · '+clockText(w.segment_remaining_ms)+' in segment · '+clockText(w.duration_ms-w.elapsed_ms)+' remaining':
+    w?.complete?'Workout complete':selectedWorkout==='manual'?'Manual control':'Ready · Press Start to begin the warm-up';
+  element('workoutNext').textContent=active?(w.segment+1===w.segment_count?'Next: finish and stop':
+    'Next: '+(w.next_speed_mps*factors[speedUnit]).toFixed(1)+' '+unitNames[speedUnit]+' · '+w.next_grade.toFixed(1)+'% incline')+
+    (w.overridden?' · Manual adjustment for this segment':''):'';
+}
 function speedReadings(){
   element('speedUnit').textContent=unitNames[speedUnit];
   const other=speedUnit==='kmh'?'mph':'kmh';
@@ -48,6 +169,7 @@ function chooseUnit(unit){
   element('speedMax').textContent=max+' '+unitNames[unit];
   for(const id of ['kmh','mph'])element(id).setAttribute('aria-pressed',String(id===unit));
   speedReadings();
+  workoutReadings();
 }
 function clearPendingTargets(){
   clearTimeout(targetsTimer);targetsTimer=null;targetsPending=false;
@@ -78,6 +200,8 @@ function controls(){
   element('reset').disabled=!usable||foregroundBusy||!token||state.mode!=='fault';
   for(const id of ['speed','speedSlider','speedUp','speedDown','grade','gradeSlider','gradeUp','gradeDown'])
     element(id).disabled=!usable||!token||state.mode==='fault';
+  for(const button of workoutButtons.values())button.disabled=running||foregroundBusy;
+  for(const id of ['duration','intensity'])element(id).disabled=running||foregroundBusy;
   element('claim').textContent=token?'Controls enabled':state?.session_active?'In use on another screen':'Enable controls';
 }
 function render(next){
@@ -94,13 +218,31 @@ function render(next){
   element('detail').textContent=state.fault?'Connection or controller fault. Enable controls, reset the fault, then start again.':'Connected locally. Physical outputs remain disabled.';
   if(!state.software_test)element('message').textContent='Software test mode is disabled in this build.';
   else if(element('message').textContent==='Waiting for controller.')element('message').textContent='Enable controls to begin.';
+  const w=state.workout;
+  const key=w?.active?`${w.id}:${w.segment}`:'';
+  if(key&&key!==lastWorkoutSegment){
+    clearPendingTargets();
+    chooseWorkout(w.id,false);
+    element('duration').value=w.duration_ms/60000;
+    element('intensity').value=Math.round(w.intensity*100);
+    element('message').textContent='Workout running. Adjustments apply to this segment.';
+    draftSpeedMps=state.requested_speed_mps;chooseUnit(speedUnit);
+    element('grade').value=state.requested_grade_percent; element('gradeSlider').value=state.requested_grade_percent;
+  }
+  if(lastWorkoutSegment&&!key){
+    clearPendingTargets();draftSpeedMps=0;chooseUnit(speedUnit);
+    if(w?.complete)element('message').textContent='Workout complete. Speed and incline requests cleared.';
+    element('grade').value='0';element('gradeSlider').value='0';
+  }
+  lastWorkoutSegment=key;
+  workoutReadings();
   controls();
 }
 function unavailable(){
   online=false;token=null;stopPending=false;clearPendingTargets();
   element('connection').textContent='Controller unavailable';element('dot').className='';
   element('mode').textContent='Unknown';element('uptime').textContent='—';
-  speedReadings();element('acceptedGrade').textContent='—';
+  workoutReadings();speedReadings();element('acceptedGrade').textContent='—';
   element('detail').textContent='The controller times out after 3 seconds without commands. Reconnection never restarts the test.';
   controls();
 }
@@ -127,6 +269,12 @@ async function act(action){
       element('message').textContent='Choose speed within the displayed range and incline from 0–10%.';return;
     }
   }
+  if(action.startsWith('w:')){
+    speed=Number(element('duration').value);grade=Number(element('intensity').value);
+    if(!Number.isInteger(speed)||speed<1||speed>120||!Number.isFinite(grade)||grade<50||grade>150){
+      element('message').textContent='Choose 1–120 whole minutes and intensity from 50–150%.';return;
+    }
+  }
   if(action!=='claim'&&!token)return;
   busy=true;foregroundBusy=!['heartbeat','targets'].includes(action);controls();
   try{
@@ -140,12 +288,13 @@ async function act(action){
       return;
     }
     const result=await response.json();
-    if(action==='claim'){token=result.token;sequence=0;element('message').textContent='Controls enabled. Press Start to begin at zero.';}
+    if(action==='claim'){token=result.token;sequence=0;element('message').textContent='Controls enabled. Choose a workout or use Manual, then press Start.';}
     else{
       render(result);
       if(action==='start'||action==='stop'||action==='reset'){
         draftSpeedMps=0;chooseUnit(speedUnit);element('grade').value='0.0';element('gradeSlider').value='0';
       }
+      if(action.startsWith('w:'))element('message').textContent='Workout started. Manual adjustments last until the next segment.';
       const messages={start:'Session started. Adjust speed and incline directly.',stop:'Stopped. Speed and incline requests cleared.',reset:'Fault cleared. Press Start when ready.',targets:'Settings applied.'};
       if(messages[action])element('message').textContent=messages[action];
     }
@@ -184,9 +333,19 @@ for(const [id,action] of Object.entries({claim:'claim',reset:'reset'}))
   element(id).addEventListener('click',()=>act(action));
 element('runToggle').addEventListener('click',()=>{
   if(online&&token&&state?.mode==='running')void act('stop');
-  else if(online&&token&&state?.mode==='idle'&&!foregroundBusy)void act('start');
+  else if(online&&token&&state?.mode==='idle'&&!foregroundBusy)void act(selectedWorkout==='manual'?'start':'w:'+selectedWorkout);
 });
+for(const id of ['duration','intensity'])element(id).addEventListener('input',()=>workoutReadings());
+element('manual').addEventListener('click',()=>chooseWorkout('manual'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&token)void act('stop');});
-poll();
+async function loadWorkouts(){
+  try{
+    const response=await request('/api/workouts');
+    if(!response.ok)throw new Error('Catalog unavailable');
+    setWorkoutCatalog(await response.json());
+  }catch(error){element('workoutDescription').textContent='Workouts unavailable. Refresh to retry; manual control is available.';}
+  poll();
+}
+loadWorkouts();
 </script>
 </html>

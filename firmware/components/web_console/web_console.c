@@ -67,9 +67,16 @@ static esp_err_t hero_get(httpd_req_t *req)
     httpd_resp_set_type(req, "image/jpeg");
     return httpd_resp_send(req, (const char *)hero_start, hero_end - hero_start);
 }
+static esp_err_t workouts_get(httpd_req_t *req)
+{
+    headers(req);
+    httpd_resp_set_type(req, "application/json");
+    return httpd_resp_sendstr(req, test_session_workout_catalog());
+}
 static esp_err_t status_get(httpd_req_t *req)
 {
     portENTER_CRITICAL(&status_lock);
+    test_session_t snapshot = session;
     bool test_enabled = session.enabled;
     control_mode_t current_mode = test_enabled ? session.control.mode : mode;
     control_fault_t current_fault = test_enabled ? session.control.fault : fault;
@@ -80,16 +87,18 @@ static esp_err_t status_get(httpd_req_t *req)
     portEXIT_CRITICAL(&status_lock);
     const char *name = current_mode == CONTROL_IDLE ? "idle" :
                        current_mode == CONTROL_RUNNING ? "running" : "fault";
-    char body[512];
+    char workout[400];
+    test_session_workout_json(&snapshot, workout, sizeof(workout));
+    char body[1024];
     int length = snprintf(body, sizeof(body),
         "{\"mode\":\"%s\",\"fault\":%d,\"commissioned\":false,"
         "\"software_test\":%s,\"session_active\":%s,\"requested_speed_mps\":%.2f,"
         "\"requested_grade_percent\":%.2f,"
         "\"motion_available\":false,\"hardware_verified\":false,"
-        "\"uptime_ms\":%" PRId64 ",\"sample_age_ms\":%" PRId64 "}",
+        "\"uptime_ms\":%" PRId64 ",\"sample_age_ms\":%" PRId64 ",\"workout\":%s}",
         name, (int)current_fault, test_enabled ? "true" : "false",
         owner ? "true" : "false", (double)speed, (double)grade, esp_timer_get_time() / 1000,
-        (esp_timer_get_time() - sample) / 1000);
+        (esp_timer_get_time() - sample) / 1000, workout);
     if (length < 0 || (size_t)length >= sizeof(body)) return ESP_FAIL;
     headers(req);
     httpd_resp_set_type(req, "application/json");
@@ -140,10 +149,10 @@ static esp_err_t command_post(httpd_req_t *req)
     }
     body[received] = 0;
     char token_text[17], sequence_text[11];
-    char action[16];
+    char action[32];
     float speed, grade;
     int end = 0;
-    if (sscanf(body, "%16[0-9a-f] %10[0-9] %15s %f %f %n",
+    if (sscanf(body, "%16[0-9a-f] %10[0-9] %31s %f %f %n",
                token_text, sequence_text, action, &speed, &grade, &end) != 5 ||
         end != received || strlen(token_text) != 16 || !isfinite(speed) || !isfinite(grade))
         return rejected(req, "400 Bad Request", "Malformed test command");
@@ -158,10 +167,12 @@ static esp_err_t command_post(httpd_req_t *req)
     else if (!strcmp(action, "targets")) operation = TEST_TARGETS;
     else if (!strcmp(action, "heartbeat")) operation = TEST_HEARTBEAT;
     else if (!strcmp(action, "reset")) operation = TEST_RESET;
+    else if (!strncmp(action, "w:", 2)) operation = TEST_WORKOUT;
     else return rejected(req, "400 Bad Request", "Unknown action");
     portENTER_CRITICAL(&status_lock);
-    bool accepted = test_session_command(&session, esp_timer_get_time(), token,
-                                          sequence, operation, speed, grade);
+    bool accepted = operation == TEST_WORKOUT ?
+        test_session_start_workout(&session, esp_timer_get_time(), token, sequence, action + 2, speed, grade) :
+        test_session_command(&session, esp_timer_get_time(), token, sequence, operation, speed, grade);
     portEXIT_CRITICAL(&status_lock);
     if (!accepted) return rejected(req, "409 Conflict", "Command rejected: check session, state, and test limits");
     return status_get(req);
@@ -212,7 +223,7 @@ esp_err_t web_console_start(void)
     ESP_RETURN_ON_ERROR(esp_wifi_start(), TAG, "AP start failed");
 
     httpd_config_t server_config = HTTPD_DEFAULT_CONFIG();
-    server_config.max_uri_handlers = 6;
+    server_config.max_uri_handlers = 7;
     server_config.lru_purge_enable = true;
     server_config.recv_wait_timeout = 3;
     server_config.send_wait_timeout = 3;
@@ -220,12 +231,14 @@ esp_err_t web_console_start(void)
     esp_err_t result = httpd_start(&server, &server_config);
     if (result == ESP_OK) {
         const httpd_uri_t index = { .uri = "/", .method = HTTP_GET, .handler = index_get };
+        const httpd_uri_t workouts = { .uri = "/api/workouts", .method = HTTP_GET, .handler = workouts_get };
         const httpd_uri_t status = { .uri = "/api/status", .method = HTTP_GET, .handler = status_get };
         const httpd_uri_t claim = { .uri = "/api/test/claim", .method = HTTP_POST, .handler = claim_post };
         const httpd_uri_t command = { .uri = "/api/test/command", .method = HTTP_POST, .handler = command_post };
         const httpd_uri_t logo = { .uri = "/assets/logo.svg", .method = HTTP_GET, .handler = logo_get };
         const httpd_uri_t hero = { .uri = "/assets/hero.jpg", .method = HTTP_GET, .handler = hero_get };
         result = httpd_register_uri_handler(server, &index);
+        if (result == ESP_OK) result = httpd_register_uri_handler(server, &workouts);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &status);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &claim);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &command);

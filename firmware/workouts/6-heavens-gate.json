@@ -1,0 +1,54 @@
+{
+  "id": "breck-heavens-gate",
+  "name": "Heaven’s Gate · Breckenridge",
+  "description": "Trail-inspired · Published trail: 5 km. Estimated incline profile, not a GPS recreation. Workout duration and pace are adjustable.",
+  "default_duration_minutes": 40,
+  "default_intensity_percent": 100,
+  "segments": [
+    {
+      "weight": 2,
+      "speed_mps": 1,
+      "grade_percent": 0
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1.8,
+      "grade_percent": 1
+    },
+    {
+      "weight": 3,
+      "speed_mps": 1.8,
+      "grade_percent": 3
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1.6,
+      "grade_percent": 5
+    },
+    {
+      "weight": 2,
+      "speed_mps": 2,
+      "grade_percent": 1
+    },
+    {
+      "weight": 3,
+      "speed_mps": 1.8,
+      "grade_percent": 4
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1.6,
+      "grade_percent": 6
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1.8,
+      "grade_percent": 2
+    },
+    {
+      "weight": 2,
+      "speed_mps": 1,
+      "grade_percent": 0
+    }
+  ]
+}
