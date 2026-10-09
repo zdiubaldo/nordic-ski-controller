@@ -26,6 +26,10 @@ static test_session_t session;
 static bool session_initialized;
 extern const unsigned char page_start[] asm("_binary_index_html_start");
 extern const unsigned char page_end[] asm("_binary_index_html_end");
+extern const unsigned char logo_start[] asm("_binary_assets_logo_svg_start");
+extern const unsigned char logo_end[] asm("_binary_assets_logo_svg_end");
+extern const unsigned char hero_start[] asm("_binary_assets_hero_jpg_start");
+extern const unsigned char hero_end[] asm("_binary_assets_hero_jpg_end");
 
 void web_console_publish(const control_t *controller)
 {
@@ -43,13 +47,25 @@ static void headers(httpd_req_t *req)
     httpd_resp_set_hdr(req, "X-Frame-Options", "DENY");
     httpd_resp_set_hdr(req, "Content-Security-Policy",
         "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
-        "connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
+        "img-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
 }
 static esp_err_t index_get(httpd_req_t *req)
 {
     headers(req);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
     return httpd_resp_send(req, (const char *)page_start, page_end - page_start);
+}
+static esp_err_t logo_get(httpd_req_t *req)
+{
+    headers(req);
+    httpd_resp_set_type(req, "image/svg+xml");
+    return httpd_resp_send(req, (const char *)logo_start, logo_end - logo_start);
+}
+static esp_err_t hero_get(httpd_req_t *req)
+{
+    headers(req);
+    httpd_resp_set_type(req, "image/jpeg");
+    return httpd_resp_send(req, (const char *)hero_start, hero_end - hero_start);
 }
 static esp_err_t status_get(httpd_req_t *req)
 {
@@ -196,7 +212,7 @@ esp_err_t web_console_start(void)
     ESP_RETURN_ON_ERROR(esp_wifi_start(), TAG, "AP start failed");
 
     httpd_config_t server_config = HTTPD_DEFAULT_CONFIG();
-    server_config.max_uri_handlers = 4;
+    server_config.max_uri_handlers = 6;
     server_config.lru_purge_enable = true;
     server_config.recv_wait_timeout = 3;
     server_config.send_wait_timeout = 3;
@@ -207,10 +223,14 @@ esp_err_t web_console_start(void)
         const httpd_uri_t status = { .uri = "/api/status", .method = HTTP_GET, .handler = status_get };
         const httpd_uri_t claim = { .uri = "/api/test/claim", .method = HTTP_POST, .handler = claim_post };
         const httpd_uri_t command = { .uri = "/api/test/command", .method = HTTP_POST, .handler = command_post };
+        const httpd_uri_t logo = { .uri = "/assets/logo.svg", .method = HTTP_GET, .handler = logo_get };
+        const httpd_uri_t hero = { .uri = "/assets/hero.jpg", .method = HTTP_GET, .handler = hero_get };
         result = httpd_register_uri_handler(server, &index);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &status);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &claim);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &command);
+        if (result == ESP_OK) result = httpd_register_uri_handler(server, &logo);
+        if (result == ESP_OK) result = httpd_register_uri_handler(server, &hero);
     }
     if (result != ESP_OK) {
         if (server) httpd_stop(server);
