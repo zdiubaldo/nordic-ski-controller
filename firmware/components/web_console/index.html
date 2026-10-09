@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nordic Ski Controller</title>
+<style>
+:root{color-scheme:dark;font:17px system-ui,sans-serif;background:#111c25;color:#e9f0f4}*{box-sizing:border-box}body{margin:0}main{max-width:760px;margin:auto;padding:40px 22px}h1{font-size:clamp(30px,6vw,44px);letter-spacing:-.04em;margin:8px 0 24px}h2{font-size:21px}.eyebrow{color:#8bc6bc;font-size:13px;letter-spacing:.14em;text-transform:uppercase}.card{background:#1a2a36;border:1px solid #344650;border-radius:16px;padding:24px;margin:18px 0}p{line-height:1.6;color:#bacad4}.status{display:flex;align-items:center;gap:10px}#dot{width:10px;height:10px;border-radius:50%;background:#d5aa69}#dot.online{background:#82d3b4}dl{display:grid;grid-template-columns:1fr 1fr;gap:18px}dt{color:#a7bcc9}dd{margin:0;text-align:right;font-weight:600}button{min-height:48px;padding:12px 20px;font:inherit;border-radius:9px;border:1px solid #60717c;background:#2d3e4a;color:#b0bcc4}button:disabled{opacity:.65}.note{font-size:14px}footer{color:#9bb0bf;font-size:14px;margin-top:26px}
+</style>
+<main>
+<div class="eyebrow">Nordic training</div><h1>Ski controller</h1>
+<div class="status" role="status" aria-live="polite"><span id="dot"></span><span id="connection">Connecting to controller…</span></div>
+<section class="card"><h2>Machine setup required</h2><p>The controller’s motion interfaces have not been configured or verified. Speed and incline controls will become available after machine commissioning.</p><button disabled>Start unavailable</button></section>
+<section class="card" aria-label="Controller status"><dl>
+<dt>Controller</dt><dd id="mode">Waiting</dd>
+<dt>Hardware</dt><dd>Unverified</dd>
+<dt>Motion control</dt><dd>Unavailable</dd>
+<dt>Uptime</dt><dd id="uptime">—</dd>
+</dl><p class="note" id="detail">Waiting for a live status report.</p></section>
+<footer>Local connection · No internet required</footer>
+</main>
+<script>
+const element=id=>document.getElementById(id);
+async function poll(){
+  const abort=new AbortController();
+  const timer=setTimeout(()=>abort.abort(),2500);
+  try{
+    const response=await fetch('/api/status',{cache:'no-store',signal:abort.signal});
+    if(!response.ok)throw new Error('Status unavailable');
+    const state=await response.json();
+    if(!['idle','running','fault'].includes(state.mode)||
+       !Number.isFinite(state.uptime_ms)||!Number.isFinite(state.sample_age_ms)||
+       state.sample_age_ms<0||state.sample_age_ms>1000)throw new Error('Stale status');
+    element('connection').textContent='Connected';element('dot').className='online';
+    element('mode').textContent=state.mode[0].toUpperCase()+state.mode.slice(1);
+    element('uptime').textContent=Math.floor(state.uptime_ms/1000)+' seconds';
+    element('detail').textContent=state.fault?'Controller fault reported. Check the device.':'Live status received. Physical relay state is unverified.';
+  }catch(error){
+    element('connection').textContent='Controller unavailable';element('dot').className='';
+    element('mode').textContent='Unknown';element('uptime').textContent='—';
+    element('detail').textContent='Connect to the controller’s Wi-Fi network. Retrying automatically.';
+  }finally{clearTimeout(timer);setTimeout(poll,1000);}
+}
+poll();
+</script>
+</html>

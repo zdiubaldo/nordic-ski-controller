@@ -11,6 +11,7 @@ From the repository root:
 ```sh
 cd firmware
 idf.py set-target esp32s3
+idf.py menuconfig
 idf.py build
 ```
 
@@ -56,3 +57,7 @@ cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g \
   firmware/components/relay/relay.c tests/relay_tests.c -o /tmp/relay-tests
 /tmp/relay-tests
 ```
+
+## Tablet connection
+
+In `idf.py menuconfig`, open **Nordic Wi-Fi status page** and set a local password of 12–63 printable ASCII characters. An empty or invalid password disables Wi-Fi. The default SSID is `Nordic-Ski-Setup`. See [tablet instructions](../docs/tablet-connection.md). Credentials are compiled into the image: do not publish a configured binary or sdkconfig. CI builds with an empty password.

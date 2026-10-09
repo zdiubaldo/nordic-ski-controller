@@ -2,7 +2,7 @@
 
 ## Approved foundation
 
-ESP-IDF was selected by the owner. Firmware is C with an ESP-IDF component shared by the application and tests. No hardware emulator has been selected. Wi-Fi and BLE are required capabilities; transport protocol and tablet framework remain decisions to confirm before implementation.
+ESP-IDF was selected by the owner. Firmware is C with an ESP-IDF component shared by the application and tests. No hardware emulator has been selected. The owner selected Wi-Fi with a browser interface and explicitly approved the controller creating its own network. The initial ESP-IDF HTTP interface is read-only. BLE and the authenticated motion-command protocol remain pending.
 
 ## Current component
 

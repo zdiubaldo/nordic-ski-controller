@@ -15,7 +15,9 @@
 - [x] Implement TCA9554 driver and ESP-IDF adapter with register-level tests.
 - [ ] Implement board adapter and verify inactive outputs during boot/reset/power loss.
 - [ ] Read physical input and deliberately switch an unloaded relay.
-- [ ] Select Wi-Fi/BLE transport and tablet technology with owner approval.
+- [x] Owner approved Wi-Fi browser interface on the controller’s own network.
+- [x] Implement password-protected access point and read-only status page.
+- [ ] Validate tablet connection and radio behavior on the board.
 - [ ] Implement authenticated commands/status and test link loss/reconnection.
 
 ## Machine integration
