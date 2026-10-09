@@ -1,16 +1,30 @@
-name: Simulator checks
+name: Firmware checks
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  test:
+  control-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m unittest discover -s tests -v
-      - run: python -m simulator
+      - name: Test actual firmware control component on host
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/control/include firmware/components/control/control.c tests/control_tests.c -lm -o /tmp/control-tests
+          /tmp/control-tests
+  esp32-build:
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.1
+    strategy:
+      matrix:
+        project: [firmware, firmware/test_app]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ESP32-S3 firmware
+        shell: bash
+        working-directory: ${{ matrix.project }}
+        run: |
+          . /opt/esp/idf/export.sh
+          idf.py set-target esp32s3
+          idf.py build

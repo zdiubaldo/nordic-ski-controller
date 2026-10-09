@@ -1,38 +1,31 @@
 # Development roadmap
 
-## 0. Repository and simulator
+## Firmware foundation
 
-- [x] Public repository foundation and hardware notes.
-- [x] Hardware-independent state model and command-line demo.
-- [x] Automated tests for state transitions, command validation, and lost communication.
+- [x] Public repository and hardware notes.
+- [x] Owner selected ESP-IDF.
+- [x] ESP32-S3 application and shared C control component.
+- [x] Native control tests and ESP-IDF Unity test image.
+- [x] CI definition pinned to ESP-IDF 6.1.
 
-## 1. Tablet interface and simulated transport
+## Board bring-up
 
-- [ ] Responsive local interface showing simulated status, speed, incline, and faults.
-- [ ] Explicit simulation labeling and separate requested/actual values.
-- [ ] Command protocol and single-operator session semantics.
-- [ ] Exercise disconnect, stale command, and reconnect scenarios.
+- [ ] Verify delivered model/revision, USB connection, and manufacturer mapping.
+- [ ] Record/back up factory firmware; flash application and execute Unity tests.
+- [ ] Implement board adapter and verify inactive outputs during boot/reset/power loss.
+- [ ] Read physical input and deliberately switch an unloaded relay.
+- [ ] Select Wi-Fi/BLE transport and tablet technology with owner approval.
+- [ ] Implement authenticated commands/status and test link loss/reconnection.
 
-## 2. Unloaded board bring-up
+## Machine integration
 
-- [ ] Confirm board model/revision and pin/expander mappings.
-- [ ] Pin toolchain versions and add a reproducible firmware build.
-- [ ] Default-off outputs and disabled hardware mode.
-- [ ] Read one button and deliberately switch one unloaded relay.
-- [ ] Wi-Fi control plus status feedback to an iPad.
-- [ ] Power-cycle, reset, brownout, and link-loss validation.
+- [ ] Collect roller drive, lift, and sensor documentation.
+- [ ] Establish independent safety circuit, stopping and load-holding strategy.
+- [ ] Approve electrical interface, physical limits, timeout and ramp behavior.
+- [ ] Implement motion adapters, interlocks, and measured feedback.
+- [ ] Complete controlled machine commissioning before person-on-machine tests.
 
-## 3. Machine interface
+## Training features
 
-- [ ] Collect motor, drive, lift, and sensor documentation.
-- [ ] Review independent safety circuit and stopping/load-holding strategy.
-- [ ] Select electrical interface, protection, wiring, and physical limits.
-- [ ] Implement drive/lift adapters with interlocks and measured feedback.
-- [ ] Conduct controlled machine commissioning before person-on-machine tests.
-
-## 4. Training features
-
-- [ ] Workout steps and smooth speed/incline transitions.
-- [ ] Session logging and measured distance/elevation calculations.
-- [ ] BLE setup or native-app transport.
-- [ ] Owner selects a license before inviting reuse/contributions.
+- [ ] Workout steps, session logging, measured distance/elevation.
+- [ ] Owner selects license before inviting reuse/contributions.
