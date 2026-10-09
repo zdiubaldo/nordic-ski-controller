@@ -45,7 +45,7 @@ idf.py build
 idf.py -p YOUR_SERIAL_PORT flash monitor
 ```
 
-Expect nine tests and zero failures. This replaces the application image; reflash the main application afterward. CI compiles this test image but does not execute it on hardware. Host tests cannot verify electrical startup behavior, task timing, radio behavior, or mechanical stopping.
+Expect twelve tests and zero failures. This replaces the application image; reflash the main application afterward. CI compiles this test image but does not execute it on hardware. Host tests cannot verify electrical startup behavior, task timing, radio behavior, or mechanical stopping.
 
 ## Relay driver
 
@@ -67,3 +67,7 @@ In `idf.py menuconfig`, open **Nordic Wi-Fi status page** and set a local passwo
 Detected chip: ESP32-D0WDQ6-V3 revision 3.1, 4 MB flash, 40 MHz crystal. Use `idf.py set-target esp32`, not `esp32s3`. Target-specific defaults select UART console, 4 MB flash, DIO and 40 MHz flash clock. The Waveshare target retains its own 16 MB and USB Serial/JTAG settings. No relay GPIOs or board I/O are initialized on either target.
 
 Before flashing, save the current 4 MB flash to a private location. Local backups, credentials and builds go under ignored `.local/`; never upload them as public build artifacts. Set the Wi-Fi password locally as described above. CI builds both targets without a password.
+
+## Software-only control test
+
+Enable **Nordic Wi-Fi status page → Enable software-only control test** for the Hosyond bench build. It defaults off. This exercises the existing C controller with test limits and never initializes GPIO/relay outputs. See [test workflow and timeout behavior](../docs/software-test.md).

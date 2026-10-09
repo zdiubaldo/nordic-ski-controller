@@ -94,6 +94,8 @@ void app_main(void)
     RUN_TEST(stop_and_restart);
     void run_relay_tests(void);
     run_relay_tests();
+    void run_session_tests(void);
+    run_session_tests();
     UNITY_END();
 }
 #else

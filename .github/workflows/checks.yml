@@ -15,6 +15,13 @@ jobs:
           /tmp/control-tests
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/relay/include firmware/components/relay/relay.c tests/relay_tests.c -o /tmp/relay-tests
           /tmp/relay-tests
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/control/include -Ifirmware/components/test_session/include firmware/components/control/control.c firmware/components/test_session/test_session.c tests/session_tests.c -lm -o /tmp/session-tests
+          /tmp/session-tests
+  browser-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node tests/web_console.test.cjs
   esp32-build:
     runs-on: ubuntu-latest
     container: espressif/idf:v6.1

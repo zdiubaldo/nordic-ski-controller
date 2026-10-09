@@ -10,7 +10,7 @@ The project uses **ESP-IDF 6.1 and C**. It contains an ESP32-S3 application, a s
 
 The application boots with an unconfigured controller and runs its control tick independently every 20 ms. It rejects start commands until commissioned limits and healthy interlock feedback are supplied. A tested relay-expander component exists but is not connected to the application: **this firmware does not establish or verify the physical relay states**. Keep machine wiring disconnected during board bring-up.
 
-The owner selected a controller-hosted Wi-Fi network and browser interface. A password-protected access point and read-only tablet status page are implemented using ESP-IDF. Set a local password before flashing; Wi-Fi stays disabled without one. BLE, motion commands, motor control, and feedback remain pending. Further technology choices require owner approval. See [tablet connection](docs/tablet-connection.md).
+The owner selected a controller-hosted Wi-Fi network and browser interface. A password-protected access point and tablet interface are implemented using ESP-IDF. An opt-in [software test mode](docs/software-test.md) supports Start/Stop and speed/incline requests with no physical outputs. Set a local password before flashing; Wi-Fi stays disabled without one. BLE, motion commands, motor control, and feedback remain pending. Further technology choices require owner approval. See [tablet connection](docs/tablet-connection.md).
 
 ## Build and test
 

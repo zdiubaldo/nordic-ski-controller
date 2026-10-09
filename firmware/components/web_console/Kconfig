@@ -9,4 +9,7 @@ menu "Nordic Wi-Fi status page"
             Empty disables Wi-Fi. Set locally before flashing.
             This value is stored in the firmware image. Do not publish the
             configured sdkconfig or firmware binaries containing your password.
+    config NORDIC_SOFTWARE_TEST
+        bool "Enable software-only control test (no physical outputs)"
+        default n
 endmenu
