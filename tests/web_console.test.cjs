@@ -5,7 +5,7 @@ const html = fs.readFileSync('firmware/components/web_console/index.html', 'utf8
 const script = html.split('<script>')[1].split('</script>')[0].replace(/poll\(\);\s*$/, '');
 const elements = new Map();
 const document = { hidden:false, addEventListener(){}, getElementById(id){
-  if (!elements.has(id)) elements.set(id, {textContent:'',value:'0',disabled:false,addEventListener(){}});
+  if (!elements.has(id)) elements.set(id, {textContent:'',value:'0',disabled:false,addEventListener(){},setAttribute(){}});
   return elements.get(id);
 }};
 const context = vm.createContext({document,AbortController,setTimeout,clearTimeout,console,
@@ -29,4 +29,9 @@ assert.equal(run('token'),null); // Reconnection must not reclaim or restart.
 assert.throws(()=>run('render({...state,sample_age_ms:1001})'),/Stale status/);
 run('render({...state,software_test:false,sample_age_ms:0})');
 assert.equal(elements.get('claim').disabled,true);
+run('draftSpeedMps=2;chooseUnit("mph");chooseUnit("kmh")');
+assert.equal(run('draftSpeedMps'),2);
+assert.equal(elements.get('speed').value,'7.20');
+run('draftSpeedMps=5;adjustSpeed(0.5)');
+assert.equal(run('draftSpeedMps'),5);
 console.log('Browser control availability and reconnect checks passed.');

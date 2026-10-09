@@ -6,9 +6,9 @@ Enable `CONFIG_NORDIC_SOFTWARE_TEST` in a local build to exercise controller log
 
 1. Join the controller's network and open or refresh http://192.168.4.1/.
 2. Confirm the software-test / physical-outputs-disabled notice.
-3. Select **Take control**, then **Start test**. Start always begins at zero requests.
-4. Enter speed and incline and select **Apply requests**. The status card shows the requests acknowledged by the controller, not measured speed or angle.
-5. Select **Stop test** to clear requests and return to idle.
+3. Select **Enable controls**, then **Start**. Start always begins at zero requests.
+4. Enter speed and incline and select **Apply settings**. The status card shows the requests acknowledged by the controller, not measured speed or angle.
+5. Select **Stop** to clear requests and return to idle.
 6. To test connection loss, start a test, set nonzero requests, then disconnect tablet Wi-Fi. After three seconds without commands the ESP32 clears requests, latches a timeout fault, and expires ownership. Reconnect, take control, reset the fault, then deliberately start again. No previous targets are restored.
 
 The page sends a heartbeat approximately every half second while it is visible and owns control. Backgrounding attempts a stop and stops heartbeats; backgrounding, closing, or losing connectivity may instead produce a timeout fault. Do not infer controller state from an unavailable page. Reloading loses the page's token and requires taking control again after the previous lease expires.
@@ -22,3 +22,5 @@ The HTTP handlers and independent 20 ms main loop serialize short, in-memory tes
 The existing HTTP interface adds `POST /api/test/claim` and `POST /api/test/command`. Both require the custom `X-Nordic-Test: 1` header; no CORS/preflight support is provided. Command bodies are bounded to 127 bytes and contain token, sequence, action, speed, and grade. Access to the WPA2 network is the authentication boundary for this bench-only interface. This is not a commissioned machine-control or production authorization protocol.
 
 C tests cover disabled mode, ownership, replay, invalid setpoints, heartbeat renewal, stop, deadline boundaries, lease loss, and deliberate reset/restart. Actual tablet behavior must also be checked against the flashed board.
+
+The tablet dashboard supports both km/h and mph. Switching units keeps the speed request unchanged; the secondary reading shows the other unit. Sliders and +/− controls edit pending settings, while Apply settings explicitly sends them to the controller. Accepted readings are separate from pending values. The fixed bottom action bar keeps Start, Apply settings, and Stop available while scrolling.
