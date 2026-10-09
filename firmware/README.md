@@ -60,4 +60,10 @@ cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g \
 
 ## Tablet connection
 
-In `idf.py menuconfig`, open **Nordic Wi-Fi status page** and set a local password of 12–63 printable ASCII characters. An empty or invalid password disables Wi-Fi. The default SSID is `Nordic-Ski-Setup`. See [tablet instructions](../docs/tablet-connection.md). Credentials are compiled into the image: do not publish a configured binary or sdkconfig. CI builds with an empty password.
+In `idf.py menuconfig`, open **Nordic Wi-Fi status page** and set a local password of 8–63 printable ASCII characters. An empty or invalid password disables Wi-Fi. The default SSID is `Nordic-Ski-Setup`. See [tablet instructions](../docs/tablet-connection.md). Credentials are compiled into the image: do not publish a configured binary or sdkconfig. CI builds with an empty password.
+
+## Hosyond ESP32S USB test board
+
+Detected chip: ESP32-D0WDQ6-V3 revision 3.1, 4 MB flash, 40 MHz crystal. Use `idf.py set-target esp32`, not `esp32s3`. Target-specific defaults select UART console, 4 MB flash, DIO and 40 MHz flash clock. The Waveshare target retains its own 16 MB and USB Serial/JTAG settings. No relay GPIOs or board I/O are initialized on either target.
+
+Before flashing, save the current 4 MB flash to a private location. Local backups, credentials and builds go under ignored `.local/`; never upload them as public build artifacts. Set the Wi-Fi password locally as described above. CI builds both targets without a password.

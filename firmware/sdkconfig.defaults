@@ -1,2 +1,1 @@
-CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
-CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+# Shared defaults. ESP-IDF also loads sdkconfig.defaults.<target>.

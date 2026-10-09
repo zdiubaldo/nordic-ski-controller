@@ -70,8 +70,8 @@ esp_err_t web_console_start(void)
     const char *ssid = CONFIG_NORDIC_AP_SSID;
     const char *password = CONFIG_NORDIC_AP_PASSWORD;
     size_t ssid_len = strlen(ssid), password_len = strlen(password);
-    if (!ssid_len || ssid_len > 32 || password_len < 12 || password_len > 63) {
-        ESP_LOGW(TAG, "Wi-Fi disabled: configure SSID and a 12-63 character password in menuconfig");
+    if (!ssid_len || ssid_len > 32 || password_len < 8 || password_len > 63) {
+        ESP_LOGW(TAG, "Wi-Fi disabled: configure SSID and a 8-63 character password in menuconfig");
         return ESP_ERR_INVALID_ARG;
     }
     for (size_t i = 0; i < password_len; ++i)

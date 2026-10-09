@@ -21,12 +21,13 @@ jobs:
     strategy:
       matrix:
         project: [firmware, firmware/test_app]
+        target: [esp32, esp32s3]
     steps:
       - uses: actions/checkout@v4
-      - name: Build ESP32-S3 firmware
+      - name: Build ${{ matrix.target }} firmware
         shell: bash
         working-directory: ${{ matrix.project }}
         run: |
           . /opt/esp/idf/export.sh
-          idf.py set-target esp32s3
+          idf.py set-target ${{ matrix.target }}
           idf.py build

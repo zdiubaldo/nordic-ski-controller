@@ -16,3 +16,5 @@ firmware/include/secrets.h
 
 sdkconfig
 sdkconfig.old
+
+.local/
