@@ -26,10 +26,10 @@ static test_session_t session;
 static bool session_initialized;
 extern const unsigned char page_start[] asm("_binary_index_html_start");
 extern const unsigned char page_end[] asm("_binary_index_html_end");
-extern const unsigned char logo_start[] asm("_binary_assets_logo_svg_start");
-extern const unsigned char logo_end[] asm("_binary_assets_logo_svg_end");
-extern const unsigned char hero_start[] asm("_binary_assets_hero_jpg_start");
-extern const unsigned char hero_end[] asm("_binary_assets_hero_jpg_end");
+extern const unsigned char logo_start[] asm("_binary_logo_svg_start");
+extern const unsigned char logo_end[] asm("_binary_logo_svg_end");
+extern const unsigned char hero_start[] asm("_binary_hero_jpg_start");
+extern const unsigned char hero_end[] asm("_binary_hero_jpg_end");
 
 void web_console_publish(const control_t *controller)
 {
