@@ -1,61 +1,31 @@
 # Nordic Ski Controller
 
-An early-stage controller project for a custom Nordic ski training machine with a carpeted roller and adjustable incline.
+Controller firmware for a custom Nordic ski training machine with a carpeted roller and adjustable incline.
 
-Target controller: **Waveshare ESP32-S3-ETH-8DI-8RO**, standard Ethernet / isolated RS-485 version, with Wi-Fi and Bluetooth Low Energy (BLE).
+Target: **Waveshare ESP32-S3-ETH-8DI-8RO**, standard Ethernet / isolated RS-485 version, with Wi-Fi and BLE.
 
-## Current status
+## Status
 
-The hardware has been ordered. Motor, drive, lift, and sensor specifications are not yet known. This repository currently contains a **software-only simulator**, tests, and an implementation plan. It does not control a physical machine, implement ESP32 firmware, or provide a tablet interface yet.
+The project uses **ESP-IDF 6.1 and C**. It contains an ESP32-S3 application, a shared control component, desktop tests of that actual component, and an ESP-IDF Unity test application. The previous Python simulator has been removed.
 
-## Try the simulator
+The application boots with an unconfigured controller and runs its control tick independently every 20 ms. It rejects start commands until commissioned limits and healthy interlock feedback are supplied. A tested relay-expander component exists but is not connected to the application: **this firmware does not establish or verify the physical relay states**. Keep machine wiring disconnected during board bring-up.
 
-Requires Python 3.10 or newer; no third-party packages are needed.
+The owner selected a controller-hosted Wi-Fi network and browser interface. A password-protected access point and tablet interface are implemented using ESP-IDF. An opt-in [software test mode](docs/software-test.md) supports Start/Stop and speed/incline requests with no physical outputs. Set a local password before flashing; Wi-Fi stays disabled without one. BLE, motion commands, motor control, and feedback remain pending. Further technology choices require owner approval. See [tablet connection](docs/tablet-connection.md).
 
-```sh
-python3 -m simulator
-python3 -m unittest discover -s tests -v
-```
+## Build and test
 
-The demo runs a simulated workout, then shows the controller entering a fault when communication expires. Speed and incline use arbitrary **0–100 simulation units**, not real machine limits, km/h, degrees, or percent grade.
+See [firmware instructions](firmware/README.md) for ESP-IDF installation, building, and board tests. GitHub checks run the C control tests with memory/undefined-behavior sanitizers and compile both ESP32-S3 applications.
 
-## Planned system
+The control component implements start/stop, atomic setpoint validation, communication timeout, interlock fault latching, and deliberate reset/restart. It stores requested speed in m/s and incline in percent grade; these are not measured motion or a physical stopping strategy. No operating limits are approved yet.
 
-```text
-iPad / phone browser -- local Wi-Fi --> ESP32 application controller
-Native app / setup   -- BLE ---------> ESP32 application controller
-                                       | wired commands and feedback
-                                       +--> roller drive
-                                       +--> lift controller
+## Machine integration
 
-Independent hardwired safety circuit ------> drive / lift safety functions
-```
+The roller drive interface, lift controller, sensors, relay mapping, and stopping/load-holding behavior must be established from the machine documentation. Ordinary ESP32 application firmware is not an independent emergency-stop circuit.
 
-The controller will manage operating state locally. Wireless commands are requests, and an app stop button is not the machine's emergency stop. BLE support is planned separately from the browser interface; iPad browser Bluetooth is not assumed.
+See [relay driver](docs/relay-driver.md), [hardware notes](docs/hardware.md), [control design](docs/control-design.md), and [roadmap](docs/roadmap.md).
 
-## First hardware milestone
+Keep credentials out of source control. A public repository does not imply a selected open-source license; licensing remains the owner's decision.
 
-1. Verify the delivered board model, revision, and manufacturer pin assignments.
-2. Back up or record the factory firmware and validate the board with unloaded outputs.
-3. Implement firmware that starts with all outputs off.
-4. Connect an iPad interface over local Wi-Fi.
-5. Deliberately enable an unloaded relay and display a physical button input.
-6. Verify output behavior during disconnection, reset, brownout, and reconnection.
+## Interactive local dashboard
 
-See [hardware notes](docs/hardware.md), [control design](docs/control-design.md), and [roadmap](docs/roadmap.md).
-
-## Repository layout
-
-| Path | Purpose |
-| --- | --- |
-| `simulator/` | Hardware-independent reference model and demonstration |
-| `tests/` | State transition, timeout, and input validation tests |
-| `firmware/` | Hardware bring-up requirements; firmware implementation pending |
-| `docs/` | Design decisions, unknowns, and milestones |
-| `.github/workflows/` | Automated simulator checks |
-
-## Before connecting the machine
-
-This is prototype application software, not a safety controller. Relay contact ratings alone do not establish suitability for a motor. An independent emergency-stop and load-holding design must account for roller stopping distance and lift behavior. Have the machine power and safety circuits designed or reviewed by a qualified machine-controls professional before powered testing with a person on the equipment.
-
-Do not commit Wi-Fi passwords, tokens, private network settings, or unreviewed equipment photos containing personal information. Keep local configuration outside version control. Public visibility does not imply a selected open-source license; licensing is still to be decided by the owner.
+Use the [local preview](preview/README.md) to click through the actual webpage without an ESP32. It runs the same C control/session code, serves only on localhost, and never opens a device connection.

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Summit · Nordic Controller</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui,-apple-system,sans-serif;background:#0c1824;color:#f5f8fb;--blue:#16ade5;--muted:#9eb2c4;--line:#2c4052}*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{touch-action:manipulation;cursor:pointer}button:disabled{opacity:.36;cursor:default}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #75d7ff;outline-offset:4px}main{max-width:1120px;margin:auto;padding:28px 32px}.header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:24px}.identity{display:flex;align-items:center;gap:22px}.logo{width:96px;height:60px;object-fit:contain}.divider{height:42px;width:1px;background:var(--line)}.eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--blue)}h1{font-size:23px;letter-spacing:-.04em;margin:4px 0}h2{font-size:19px;margin:0}.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}#dot{width:8px;height:8px;background:#e6ac58;border-radius:50%}#dot.online{background:#69dbb0}.hero{position:relative;min-height:145px;border-radius:18px;overflow:hidden;background:#152a3c;margin-bottom:24px;display:flex;align-items:center;padding:26px}.hero-photo{position:absolute;right:0;top:0;width:50%;height:100%;object-fit:cover;object-position:50% 36%;opacity:.75}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#152a3c 40%,transparent 100%)}.hero-copy{position:relative;z-index:1;max-width:75%}.hero-copy h2{font-size:28px;font-weight:600;letter-spacing:-.03em;margin:7px 0}.hero-copy p{color:#bdcddb;font-size:14px;margin:0}.badge{display:inline-flex;align-items:center;gap:7px;border:1px solid #527086;background:#112638aa;border-radius:30px;font-size:11px;padding:6px 10px;color:#d6e3ec}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px}.mode{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}#mode{color:#fff;text-transform:capitalize;font-weight:600}.quiet{border:1px solid #436078;background:transparent;color:#d9eaf5;border-radius:10px;padding:11px 16px;min-height:44px;font-size:14px}.panels{display:grid;grid-template-columns:1fr 1fr;gap:20px}.panel{background:#142536;border:1px solid var(--line);border-radius:18px;padding:26px}.panel-heading{display:flex;justify-content:space-between;align-items:center}.index{font-size:12px;letter-spacing:.1em;color:#7792a7}.reading{display:flex;align-items:baseline;gap:8px;margin:16px 0 4px}.reading strong{font-size:76px;line-height:1.15;letter-spacing:-.065em;font-weight:500;font-variant-numeric:tabular-nums}.reading span{color:var(--muted);font-size:18px}.caption{font-size:12px;color:var(--muted);margin:0 0 26px}.setpoint{display:grid;grid-template-columns:56px 1fr 56px;gap:12px;align-items:center}.step{height:56px;border:1px solid #3b566d;background:#203a50;border-radius:12px;color:#f5f8fb;font-size:28px}.number-wrap{text-align:center}.number-wrap label{display:block;font-size:11px;color:#a7c0d3;margin-bottom:4px}.number-wrap input{width:100%;font-size:28px;font-weight:600;background:transparent;border:0;color:#fff;text-align:center;font-variant-numeric:tabular-nums;appearance:textfield}.number-wrap input::-webkit-inner-spin-button{appearance:none}.slider{width:100%;accent-color:var(--blue);height:40px;margin:18px 0 0;cursor:pointer}.scale{display:flex;justify-content:space-between;color:#7f9bb0;font-size:12px}.actions{display:grid;grid-template-columns:1fr;gap:14px;margin:22px 0 12px}.primary{min-height:64px;border:0;border-radius:12px;font-size:18px;font-weight:700}.start{background:#1ab2e8;color:#041d2b}.apply{background:#26475f;border:1px solid #406782;color:#e6f5ff}.stop{background:#bc423e;color:white}.feedback{min-height:26px;color:#a9c3d5;font-size:14px;margin:12px 2px}.bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid var(--line);margin-top:20px;padding-top:18px}.hint{color:#869fb2;font-size:12px;line-height:1.6;max-width:680px;margin:0}details{margin-top:24px;color:#8ba4b8;font-size:12px}summary{cursor:pointer;min-height:30px}#detail{line-height:1.6}footer{display:flex;justify-content:space-between;margin-top:24px;color:#617f97;font-size:11px;letter-spacing:.04em}@media(max-width:650px){main{padding:20px 16px}.header{align-items:flex-start;gap:8px}.identity{gap:12px}.logo{width:70px;height:48px}.divider{display:none}h1{font-size:18px}.eyebrow{font-size:9px}.status{font-size:11px;padding-top:8px}.hero{min-height:130px;padding:20px}.hero-copy h2{font-size:25px}.hero-copy p{font-size:12px;max-width:220px}.hero-photo{width:60%}.panels{gap:12px}.panel{padding:18px 12px}.reading strong{font-size:54px}.reading span{font-size:13px}.setpoint{grid-template-columns:40px 1fr 40px;gap:4px}.step{height:48px;font-size:24px}.number-wrap input{font-size:23px}.panel-heading h2{font-size:17px}.index{display:none}.caption{font-size:10px;margin-bottom:20px}.actions{gap:8px}.primary{font-size:15px;min-height:60px}.bottom{align-items:flex-start}}@media(max-width:370px){.panels{grid-template-columns:1fr}.reading strong{font-size:64px}.status{max-width:85px}.actions{grid-template-columns:1fr}.stop{grid-column:1/-1}}
+.units{display:flex;background:#142536;border:1px solid var(--line);border-radius:9px;padding:3px}.units button{border:0;border-radius:6px;background:transparent;color:#91a9bd;padding:8px 12px;font-size:13px;min-height:38px}.units button[aria-pressed="true"]{background:#325771;color:white}@media(max-width:450px){.toolbar{flex-wrap:wrap}.toolbar .mode{margin-left:auto}.toolbar>.quiet{width:100%}}
+main{padding-bottom:120px}.actions{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(1056px,calc(100% - 32px));margin:0;padding:14px 0 18px;background:#0c1824;z-index:5;box-shadow:0 -14px 20px #0c1824}.primary{min-height:60px}@media(max-width:370px){main{padding-bottom:180px}}
+</style>
+<main>
+<header class="header"><div class="identity"><img class="logo" src="/assets/logo.svg" alt="Team Summit Colorado"><span class="divider"></span><div><div class="eyebrow">Team Summit Nordic</div><h1>Training controller</h1></div></div><div class="status" role="status" aria-live="polite"><span id="dot"></span><span id="connection">Connecting…</span></div></header>
+<section class="hero"><img class="hero-photo" src="/assets/hero.jpg" alt="Nordic skiing at Team Summit"><div class="hero-copy"><span class="badge" id="outputNotice">Physical outputs disabled</span><h2>Your pace. Your climb.</h2><p>Set your speed and incline from one place.</p></div></section>
+<div class="toolbar"><div class="units" role="group" aria-label="Speed units"><button id="kmh" aria-pressed="true">km/h</button><button id="mph" aria-pressed="false">mph</button></div><div class="mode">Session <span id="mode">Connecting</span></div><button class="quiet" id="claim" disabled>Enable controls</button></div>
+<div class="panels">
+<section class="panel" aria-label="Speed control"><div class="panel-heading"><h2>Speed</h2><span class="index">01 / PACE</span></div><div class="reading"><strong id="acceptedSpeed">—</strong><span id="speedUnit">km/h</span></div><p class="caption">Accepted request · <span id="speedAlternate">— mph</span></p><div class="setpoint"><button class="step" id="speedDown" aria-label="Decrease speed" disabled>−</button><div class="number-wrap"><label for="speed">SET SPEED</label><input id="speed" type="number" min="0" max="18" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="speedUp" aria-label="Increase speed" disabled>+</button></div><input class="slider" id="speedSlider" type="range" min="0" max="18" step="0.5" value="0" aria-label="Speed slider" disabled><div class="scale"><span>0</span><span id="speedMax">18 km/h</span></div></section>
+<section class="panel" aria-label="Incline control"><div class="panel-heading"><h2>Incline</h2><span class="index">02 / CLIMB</span></div><div class="reading"><strong id="acceptedGrade">—</strong><span>% grade</span></div><p class="caption">Controller-accepted request</p><div class="setpoint"><button class="step" id="gradeDown" aria-label="Decrease incline" disabled>−</button><div class="number-wrap"><label for="grade">SET INCLINE</label><input id="grade" type="number" min="0" max="10" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="gradeUp" aria-label="Increase incline" disabled>+</button></div><input class="slider" id="gradeSlider" type="range" min="0" max="10" step="0.5" value="0" aria-label="Incline slider" disabled><div class="scale"><span>0%</span><span>10%</span></div></section>
+</div>
+<div class="actions"><button class="primary start" id="runToggle" disabled>▶ Start</button></div>
+<p class="feedback" id="message" role="status" aria-live="polite">Waiting for controller.</p>
+<div class="bottom"><p class="hint">Start begins at zero. Speed and incline changes apply automatically while running.<br>Development limits only · No machine movement or measured speed.</p><button class="quiet" id="reset" disabled>Reset fault</button></div>
+<details><summary>Connection details</summary><p id="detail">Waiting for a live status report.</p><p>Controller uptime: <span id="uptime">—</span></p></details>
+<footer><span>TEAM SUMMIT COLORADO</span><span>LOCAL WI-FI · NO INTERNET REQUIRED</span></footer>
+</main>
+<script>
+const element=id=>document.getElementById(id);
+let token=null,sequence=0,state=null,online=false,busy=false,stopPending=false;
+let foregroundBusy=false,targetsPending=false,targetsTimer=null;
+let speedUnit='kmh',draftSpeedMps=0;
+const factors={kmh:3.6,mph:2.2369362920544};
+const unitNames={kmh:'km/h',mph:'mph'};
+function speedReadings(){
+  element('speedUnit').textContent=unitNames[speedUnit];
+  const other=speedUnit==='kmh'?'mph':'kmh';
+  const speed=online&&state?state.requested_speed_mps:null;
+  element('acceptedSpeed').textContent=speed===null?'—':(speed*factors[speedUnit]).toFixed(1);
+  element('speedAlternate').textContent=(speed===null?'—':(speed*factors[other]).toFixed(1))+' '+unitNames[other];
+}
+function chooseUnit(unit){
+  speedUnit=unit;
+  const max=Math.floor(5*factors[unit]*100)/100;
+  const value=(draftSpeedMps*factors[unit]).toFixed(2);
+  for(const id of ['speed','speedSlider']){
+    element(id).max=String(5*factors[unit]);
+    element(id).step=unit==='kmh'?'0.5':'0.2';
+    element(id).value=value;
+  }
+  element('speedMax').textContent=max+' '+unitNames[unit];
+  for(const id of ['kmh','mph'])element(id).setAttribute('aria-pressed',String(id===unit));
+  speedReadings();
+}
+function clearPendingTargets(){
+  clearTimeout(targetsTimer);targetsTimer=null;targetsPending=false;
+}
+function scheduleTargets(){
+  clearTimeout(targetsTimer);
+  if(!online||!token||state?.mode!=='running')return;
+  targetsTimer=setTimeout(()=>{targetsTimer=null;void act('targets');},180);
+}
+function adjustSpeed(delta){
+  draftSpeedMps=Math.min(5,Math.max(0,(Number.isFinite(draftSpeedMps)?draftSpeedMps:0)+delta/factors[speedUnit]));
+  chooseUnit(speedUnit);
+  scheduleTargets();
+}
+function adjustGrade(delta){
+  const value=Math.min(10,Math.max(0,Number(element('grade').value)+delta));
+  element('grade').value=value.toFixed(1);element('gradeSlider').value=value;
+  scheduleTargets();
+}
+function controls(){
+  const usable=online&&state?.software_test;
+  element('claim').disabled=!usable||foregroundBusy||!!token||state.session_active;
+  const running=state?.mode==='running';
+  const toggle=element('runToggle');
+  toggle.textContent=!online?'Unavailable':state?.mode==='fault'?'Reset required':running?'■ Stop':'▶ Start';
+  toggle.className=running?'primary stop':'primary start';
+  toggle.disabled=!usable||!token||state.mode==='fault'||(!running&&foregroundBusy);
+  element('reset').disabled=!usable||foregroundBusy||!token||state.mode!=='fault';
+  for(const id of ['speed','speedSlider','speedUp','speedDown','grade','gradeSlider','gradeUp','gradeDown'])
+    element(id).disabled=!usable||!token||state.mode==='fault';
+  element('claim').textContent=token?'Controls enabled':state?.session_active?'In use on another screen':'Enable controls';
+}
+function render(next){
+  if(!['idle','running','fault'].includes(next.mode)||!Number.isFinite(next.sample_age_ms)||
+     next.sample_age_ms<0||next.sample_age_ms>1000)throw new Error('Stale status');
+  state=next;online=true;
+
+  element('connection').textContent=state.local_preview?'Local preview connected':'Connected';
+  element('outputNotice').textContent=state.local_preview?'Local preview · No hardware connected':'Physical outputs disabled';element('dot').className='online';
+  element('mode').textContent=state.mode;
+  element('uptime').textContent=Math.floor(state.uptime_ms/1000)+' seconds';
+  speedReadings();
+  element('acceptedGrade').textContent=Number(state.requested_grade_percent).toFixed(1);
+  element('detail').textContent=state.fault?'Connection or controller fault. Enable controls, reset the fault, then start again.':'Connected locally. Physical outputs remain disabled.';
+  if(!state.software_test)element('message').textContent='Software test mode is disabled in this build.';
+  else if(element('message').textContent==='Waiting for controller.')element('message').textContent='Enable controls to begin.';
+  controls();
+}
+function unavailable(){
+  online=false;token=null;stopPending=false;clearPendingTargets();
+  element('connection').textContent='Controller unavailable';element('dot').className='';
+  element('mode').textContent='Unknown';element('uptime').textContent='—';
+  speedReadings();element('acceptedGrade').textContent='—';
+  element('detail').textContent='The controller times out after 3 seconds without commands. Reconnection never restarts the test.';
+  controls();
+}
+async function request(path,options={}){
+  const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),2000);
+  try{return await fetch(path,{...options,cache:'no-store',signal:abort.signal});}
+  finally{clearTimeout(timer);}
+}
+async function act(action){
+  if(action==='stop')clearPendingTargets();
+  if(action==='targets'&&(!token||state?.mode!=='running'))return;
+  if(busy){
+    if(action==='stop')stopPending=true;
+    else if(action==='targets'&&!stopPending)targetsPending=true;
+    return;
+  }
+  if(action==='targets')targetsPending=false;
+  if(!online)return;
+  let speed=0,grade=0;
+  if(action==='targets'){
+    speed=draftSpeedMps;grade=Number(element('grade').value);
+    if(!element('speed').value||!element('grade').value||!Number.isFinite(speed)||
+       !Number.isFinite(grade)||speed<0||speed>5||grade<0||grade>10){
+      element('message').textContent='Choose speed within the displayed range and incline from 0–10%.';return;
+    }
+  }
+  if(action!=='claim'&&!token)return;
+  busy=true;foregroundBusy=!['heartbeat','targets'].includes(action);controls();
+  try{
+    const options={method:'POST',headers:{'X-Nordic-Test':'1'}};
+    const path=action==='claim'?'/api/test/claim':'/api/test/command';
+    if(action!=='claim')options.body=`${token} ${++sequence} ${action} ${speed} ${grade}`;
+    const response=await request(path,options);
+    if(!response.ok){
+      element('message').textContent=await response.text();
+      if(action==='heartbeat')token=null;
+      return;
+    }
+    const result=await response.json();
+    if(action==='claim'){token=result.token;sequence=0;element('message').textContent='Controls enabled. Press Start to begin at zero.';}
+    else{
+      render(result);
+      if(action==='start'||action==='stop'||action==='reset'){
+        draftSpeedMps=0;chooseUnit(speedUnit);element('grade').value='0.0';element('gradeSlider').value='0';
+      }
+      const messages={start:'Session started. Adjust speed and incline directly.',stop:'Stopped. Speed and incline requests cleared.',reset:'Fault cleared. Press Start when ready.',targets:'Settings applied.'};
+      if(messages[action])element('message').textContent=messages[action];
+    }
+  }catch(error){unavailable();element('message').textContent='Request outcome unknown. Reconnect, check state, and take control again.';}
+  finally{
+    busy=false;foregroundBusy=false;controls();
+    if(stopPending){stopPending=false;clearPendingTargets();void act('stop');}
+    else if(targetsPending){targetsPending=false;void act('targets');}
+  }
+}
+async function poll(){
+  try{
+    const response=await request('/api/status');
+    if(!response.ok)throw new Error('Status unavailable');
+    render(await response.json());
+    if(token&&!document.hidden&&!busy)await act('heartbeat');
+  }catch(error){unavailable();}
+  finally{setTimeout(poll,500);}
+}
+for(const unit of ['kmh','mph'])element(unit).addEventListener('click',()=>chooseUnit(unit));
+for(const id of ['speed','speedSlider'])element(id).addEventListener('input',()=>{
+  const value=element(id).value;
+  draftSpeedMps=value===''?NaN:Number(value)/factors[speedUnit];
+  element(id==='speed'?'speedSlider':'speed').value=value;
+  scheduleTargets();
+});
+for(const id of ['grade','gradeSlider'])element(id).addEventListener('input',()=>{
+  element(id==='grade'?'gradeSlider':'grade').value=element(id).value;
+  scheduleTargets();
+});
+element('speedUp').addEventListener('click',()=>adjustSpeed(speedUnit==='kmh'?0.5:0.2));
+element('speedDown').addEventListener('click',()=>adjustSpeed(speedUnit==='kmh'?-0.5:-0.2));
+element('gradeUp').addEventListener('click',()=>adjustGrade(0.5));
+element('gradeDown').addEventListener('click',()=>adjustGrade(-0.5));
+for(const [id,action] of Object.entries({claim:'claim',reset:'reset'}))
+  element(id).addEventListener('click',()=>act(action));
+element('runToggle').addEventListener('click',()=>{
+  if(online&&token&&state?.mode==='running')void act('stop');
+  else if(online&&token&&state?.mode==='idle'&&!foregroundBusy)void act('start');
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&token)void act('stop');});
+poll();
+</script>
+</html>

@@ -13,3 +13,8 @@ firmware/include/secrets.h
 .DS_Store
 .agents/
 .codex/
+
+sdkconfig
+sdkconfig.old
+
+.local/

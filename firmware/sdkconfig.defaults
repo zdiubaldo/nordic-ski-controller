@@ -1,0 +1,1 @@
+# Shared defaults. ESP-IDF also loads sdkconfig.defaults.<target>.

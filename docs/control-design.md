@@ -1,34 +1,25 @@
-# Initial control design
+# Control design
 
-## Application states
+## Approved foundation
 
-- `idle`: zero output demand; waiting for a deliberate start.
-- `running`: valid operator commands may update requested speed and incline.
-- `fault`: zero output demand in the simulator; start and setpoints rejected until reset.
+ESP-IDF was selected by the owner. Firmware is C with an ESP-IDF component shared by the application and tests. No hardware emulator has been selected. The owner selected Wi-Fi with a browser interface and explicitly approved the controller creating its own network. The initial ESP-IDF HTTP interface is read-only. BLE and the authenticated motion-command protocol remain pending.
 
-The reference model has `start`, `set_targets`, `stop`, `trip`, `reset`, `heartbeat`, and `tick` operations. A future transport must validate commands before invoking them. It must never expose raw relay toggles in normal workout operation.
+## Current component
 
-## Reference simulator behavior
+- Startup is idle with zero requested motion and no approved configuration.
+- Start requires commissioned finite limits, a positive command timeout, and healthy interlock feedback.
+- Valid commands update speed (m/s) and incline (percent grade) together and renew the command deadline.
+- Nonfinite, negative, and out-of-range commands are rejected without changing either target or extending the deadline.
+- The periodic tick runs independently of command reception. Expiry at the deadline faults before a late command can renew it.
+- Interlock loss or a backward timestamp latches a fault and clears requested motion.
+- Stop clears demand but never clears a fault. Reset requires healthy interlock feedback and leaves the controller idle. Starting again never restores previous targets.
 
-- Startup is idle with zero targets.
-- Start never restores a previous target.
-- Heartbeats are required while running. Expiry is checked before accepting a late heartbeat or new setpoints.
-- Communication expiry latches a fault. Reconnection alone cannot clear it.
-- Reset clears a simulated fault but leaves the controller idle; a separate start is required.
-- Invalid, nonfinite, and out-of-range setpoints are rejected without partially updating state.
-- Motion ramps toward targets using elapsed time. There are no physical I/O writes.
-- Stop and fault set simulated motion to zero immediately. **This is a model simplification, not a physical stopping strategy.**
+A single task must own the component; future transports must queue commands to that task. Use monotonic microseconds from `esp_timer_get_time()`. Tests use deliberately artificial limits/timeouts, not machine configuration. No transport currently calls start or supplies commissioning configuration.
 
-The demo's 0–100 units, ramp rates, and two-second timeout are software exercise values only. They must not be copied into real machine limits without engineering and validation.
+Clearing a requested speed/grade is not a physical stop or lift lowering command. The future hardware adapter must define controlled stop and load holding independently of the numeric requests. Actual motion feedback is not implemented.
 
-## Firmware requirements to resolve
+## Required before operation
 
-The real application must run its timeout and control loop independently of the networking task. The drive should also have its own communication-loss behavior. Hardware outputs need defined inactive states during boot, reset, and power loss, including before the application starts.
+Verify output polarity, expander mapping, power-up/reset states, physical fault causes, direction interlocks, travel limits, drive feedback, stopping behavior, and independent safety circuits. The main application currently supplies unhealthy interlock feedback and makes no board I/O writes.
 
-Determine the actual controlled stopping sequence, lift holding behavior, direction interlocks, feedback plausibility checks, and fault reset conditions from the machine design. Ordinary ESP firmware is not the independent safety circuit.
-
-## Network plan
-
-Start with local Wi-Fi and a tablet web interface; support a protected setup access point and connection to an existing local network. Internet connectivity should not be required for operation. Add BLE setup/native-app transport after the Wi-Fi milestone.
-
-Before enabling hardware commands: require explicit operator pairing, one active controlling session, bounded and validated messages, stale-command rejection, and no automatic restart after a connection returns. Keep credentials outside source control. OTA firmware updates must be restricted to an idle, disabled machine and must preserve safe boot behavior.
+Wireless command handling must include operator authorization, single-controller ownership, bounded messages, stale/replayed command rejection, and explicit restart after faults. A wireless stop is not the independent emergency stop. Determine drive-level timeout behavior as part of machine integration.

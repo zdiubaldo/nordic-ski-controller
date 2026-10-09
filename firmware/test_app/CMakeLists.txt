@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.22)
+set(EXTRA_COMPONENT_DIRS "../components")
+set(SDKCONFIG_DEFAULTS "../sdkconfig.defaults")
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(nordic_control_tests)
