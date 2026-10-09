@@ -41,7 +41,8 @@ const server=http.createServer(async(req,res)=>{
       return reply(res,200,JSON.stringify(await command('workouts')),'application/json');
     if(req.method==='GET'&&req.url==='/api/status')
       return reply(res,200,JSON.stringify(await command('status')),'application/json');
-    if(req.method!=='POST'||req.headers['x-nordic-test']!=='1')return reply(res,404,'Not found');
+    if(req.method!=='POST')return reply(res,404,'Not found');
+    if(req.headers['x-nordic-test']!=='1')return reply(res,400,'Invalid command header');
     let body='';
     for await (const chunk of req){body+=chunk.toString('utf8');if(body.length>127)return reply(res,400,'Command too large');}
     if(req.url==='/api/test/claim'&&!body){
