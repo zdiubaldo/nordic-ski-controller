@@ -25,3 +25,7 @@ The roller drive interface, lift controller, sensors, relay mapping, and stoppin
 See [relay driver](docs/relay-driver.md), [hardware notes](docs/hardware.md), [control design](docs/control-design.md), and [roadmap](docs/roadmap.md).
 
 Keep credentials out of source control. A public repository does not imply a selected open-source license; licensing remains the owner's decision.
+
+## Interactive local dashboard
+
+Use the [local preview](preview/README.md) to click through the actual webpage without an ESP32. It runs the same C control/session code, serves only on localhost, and never opens a device connection.

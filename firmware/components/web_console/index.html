@@ -10,7 +10,7 @@ main{padding-bottom:120px}.actions{position:fixed;bottom:0;left:50%;transform:tr
 </style>
 <main>
 <header class="header"><div class="identity"><img class="logo" src="/assets/logo.svg" alt="Team Summit Colorado"><span class="divider"></span><div><div class="eyebrow">Team Summit Nordic</div><h1>Training controller</h1></div></div><div class="status" role="status" aria-live="polite"><span id="dot"></span><span id="connection">Connecting…</span></div></header>
-<section class="hero"><img class="hero-photo" src="/assets/hero.jpg" alt="Nordic skiing at Team Summit"><div class="hero-copy"><span class="badge">Physical outputs disabled</span><h2>Your pace. Your climb.</h2><p>Set your speed and incline from one place.</p></div></section>
+<section class="hero"><img class="hero-photo" src="/assets/hero.jpg" alt="Nordic skiing at Team Summit"><div class="hero-copy"><span class="badge" id="outputNotice">Physical outputs disabled</span><h2>Your pace. Your climb.</h2><p>Set your speed and incline from one place.</p></div></section>
 <div class="toolbar"><div class="units" role="group" aria-label="Speed units"><button id="kmh" aria-pressed="true">km/h</button><button id="mph" aria-pressed="false">mph</button></div><div class="mode">Session <span id="mode">Connecting</span></div><button class="quiet" id="claim" disabled>Enable controls</button></div>
 <div class="panels">
 <section class="panel" aria-label="Speed control"><div class="panel-heading"><h2>Speed</h2><span class="index">01 / PACE</span></div><div class="reading"><strong id="acceptedSpeed">—</strong><span id="speedUnit">km/h</span></div><p class="caption">Accepted request · <span id="speedAlternate">— mph</span></p><div class="setpoint"><button class="step" id="speedDown" aria-label="Decrease speed" disabled>−</button><div class="number-wrap"><label for="speed">SET SPEED</label><input id="speed" type="number" min="0" max="18" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="speedUp" aria-label="Increase speed" disabled>+</button></div><input class="slider" id="speedSlider" type="range" min="0" max="18" step="0.5" value="0" aria-label="Speed slider" disabled><div class="scale"><span>0</span><span id="speedMax">18 km/h</span></div></section>
@@ -72,7 +72,8 @@ function render(next){
      next.sample_age_ms<0||next.sample_age_ms>1000)throw new Error('Stale status');
   state=next;online=true;
 
-  element('connection').textContent='Connected';element('dot').className='online';
+  element('connection').textContent=state.local_preview?'Local preview connected':'Connected';
+  element('outputNotice').textContent=state.local_preview?'Local preview · No hardware connected':'Physical outputs disabled';element('dot').className='online';
   element('mode').textContent=state.mode;
   element('uptime').textContent=Math.floor(state.uptime_ms/1000)+' seconds';
   speedReadings();
