@@ -14,18 +14,22 @@ vm.runInContext(script, context);
 const run = code => vm.runInContext(code, context);
 run('render({mode:"idle",software_test:true,session_active:false,sample_age_ms:0,uptime_ms:100,requested_speed_mps:0,requested_grade_percent:0,fault:0})');
 assert.equal(elements.get('claim').disabled,false);
-assert.equal(elements.get('start').disabled,true);
+assert.equal(elements.get('runToggle').disabled,true);
 run('token="123"; state.session_active=true; controls()');
-assert.equal(elements.get('start').disabled,false);
+assert.equal(elements.get('runToggle').disabled,false);
 run('busy=true;foregroundBusy=false;controls()');
-assert.equal(elements.get('start').disabled,false); // Heartbeats must not blink Start.
+assert.equal(elements.get('runToggle').disabled,false); // Heartbeats must not blink Start.
 run('busy=false;state.mode="running";controls()');
 assert.equal(elements.get('speedUp').disabled,false);
+assert.equal(elements.get('runToggle').textContent,'■ Stop');
+assert.equal(elements.get('runToggle').className,'primary stop');
 run('unavailable()');
 assert.equal(elements.get('speedUp').disabled,true);
 assert.equal(run('token'),null);
+assert.equal(elements.get('runToggle').disabled,true);
+assert.equal(elements.get('runToggle').textContent,'Unavailable');
 run('render({mode:"fault",software_test:true,session_active:false,sample_age_ms:0,uptime_ms:100,requested_speed_mps:0,requested_grade_percent:0,fault:1})');
-assert.equal(elements.get('start').disabled,true);
+assert.equal(elements.get('runToggle').disabled,true);
 assert.equal(elements.get('claim').disabled,false);
 assert.equal(run('token'),null); // Reconnection must not reclaim or restart.
 assert.throws(()=>run('render({...state,sample_age_ms:1001})'),/Stale status/);
