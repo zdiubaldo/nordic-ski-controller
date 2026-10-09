@@ -13,6 +13,8 @@ jobs:
         run: |
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/control/include firmware/components/control/control.c tests/control_tests.c -lm -o /tmp/control-tests
           /tmp/control-tests
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/relay/include firmware/components/relay/relay.c tests/relay_tests.c -o /tmp/relay-tests
+          /tmp/relay-tests
   esp32-build:
     runs-on: ubuntu-latest
     container: espressif/idf:v6.1

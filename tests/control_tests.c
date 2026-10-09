@@ -92,6 +92,8 @@ void app_main(void)
     RUN_TEST(timeout_latches);
     RUN_TEST(interlock_and_clock);
     RUN_TEST(stop_and_restart);
+    void run_relay_tests(void);
+    run_relay_tests();
     UNITY_END();
 }
 #else

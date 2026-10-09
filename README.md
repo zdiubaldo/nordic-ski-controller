@@ -8,7 +8,7 @@ Target: **Waveshare ESP32-S3-ETH-8DI-8RO**, standard Ethernet / isolated RS-485 
 
 The project uses **ESP-IDF 6.1 and C**. It contains an ESP32-S3 application, a shared control component, desktop tests of that actual component, and an ESP-IDF Unity test application. The previous Python simulator has been removed.
 
-The application boots with an unconfigured controller and runs its control tick independently every 20 ms. It rejects start commands until commissioned limits and healthy interlock feedback are supplied. There is no board I/O driver yet: **this firmware does not establish or verify the physical relay states**. Keep machine wiring disconnected during board bring-up.
+The application boots with an unconfigured controller and runs its control tick independently every 20 ms. It rejects start commands until commissioned limits and healthy interlock feedback are supplied. A tested relay-expander component exists but is not connected to the application: **this firmware does not establish or verify the physical relay states**. Keep machine wiring disconnected during board bring-up.
 
 Wi-Fi/BLE transports, tablet software, motor control, and feedback are still to be implemented. Application/frontend and emulator technology choices require owner approval before adoption.
 
@@ -22,6 +22,6 @@ The control component implements start/stop, atomic setpoint validation, communi
 
 The roller drive interface, lift controller, sensors, relay mapping, and stopping/load-holding behavior must be established from the machine documentation. Ordinary ESP32 application firmware is not an independent emergency-stop circuit.
 
-See [hardware notes](docs/hardware.md), [control design](docs/control-design.md), and [roadmap](docs/roadmap.md).
+See [relay driver](docs/relay-driver.md), [hardware notes](docs/hardware.md), [control design](docs/control-design.md), and [roadmap](docs/roadmap.md).
 
 Keep credentials out of source control. A public repository does not imply a selected open-source license; licensing remains the owner's decision.

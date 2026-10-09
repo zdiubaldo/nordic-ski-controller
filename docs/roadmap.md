@@ -12,6 +12,7 @@
 
 - [ ] Verify delivered model/revision, USB connection, and manufacturer mapping.
 - [ ] Record/back up factory firmware; flash application and execute Unity tests.
+- [x] Implement TCA9554 driver and ESP-IDF adapter with register-level tests.
 - [ ] Implement board adapter and verify inactive outputs during boot/reset/power loss.
 - [ ] Read physical input and deliberately switch an unloaded relay.
 - [ ] Select Wi-Fi/BLE transport and tablet technology with owner approval.

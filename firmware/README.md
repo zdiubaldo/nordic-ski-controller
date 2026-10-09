@@ -44,4 +44,15 @@ idf.py build
 idf.py -p YOUR_SERIAL_PORT flash monitor
 ```
 
-Expect five tests and zero failures. This replaces the application image; reflash the main application afterward. CI compiles this test image but does not execute it on hardware. Host tests cannot verify electrical startup behavior, task timing, radio behavior, or mechanical stopping.
+Expect nine tests and zero failures. This replaces the application image; reflash the main application afterward. CI compiles this test image but does not execute it on hardware. Host tests cannot verify electrical startup behavior, task timing, radio behavior, or mechanical stopping.
+
+## Relay driver
+
+The TCA9554 driver and ESP-IDF I2C adapter are built but not connected to the application. See [driver behavior and integration limits](../docs/relay-driver.md). Desktop relay tests compile the real driver with register-access test callbacks:
+
+```sh
+cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g \
+  -Ifirmware/components/relay/include \
+  firmware/components/relay/relay.c tests/relay_tests.c -o /tmp/relay-tests
+/tmp/relay-tests
+```
