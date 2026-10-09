@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pio/
+build/
+dist/
+.env
+.env.*
+!.env.example
+secrets.*
+config.local.*
+firmware/include/secrets.h
+.DS_Store
+.agents/
+.codex/
