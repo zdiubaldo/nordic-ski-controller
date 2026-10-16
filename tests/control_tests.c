@@ -96,6 +96,10 @@ void app_main(void)
     run_relay_tests();
     void run_session_tests(void);
     run_session_tests();
+    void run_motion_tests(void);
+    run_motion_tests();
+    void run_service_tests(void);
+    run_service_tests();
     UNITY_END();
 }
 #else

@@ -1,0 +1,36 @@
+menu "Nordic relay control mapping (unloaded bench only)"
+    config NORDIC_RELAY_CONTROL
+        bool "Connect existing web controls to physical relays"
+        depends on IDF_TARGET_ESP32S3 && NORDIC_SOFTWARE_TEST
+        default n
+    if NORDIC_RELAY_CONTROL
+    config NORDIC_RELAY_START
+        int "Start pulse relay (0 disables)"
+        range 0 8
+        default 1
+    config NORDIC_RELAY_STOP
+        int "Stop pulse relay (0 disables)"
+        range 0 8
+        default 6
+    config NORDIC_RELAY_SPEED_UP
+        int "Speed increase relay (0 disables)"
+        range 0 8
+        default 2
+    config NORDIC_RELAY_SPEED_DOWN
+        int "Speed decrease relay (0 disables)"
+        range 0 8
+        default 3
+    config NORDIC_RELAY_INCLINE_UP
+        int "Incline increase relay (0 disables)"
+        range 0 8
+        default 4
+    config NORDIC_RELAY_INCLINE_DOWN
+        int "Incline decrease relay (0 disables)"
+        range 0 8
+        default 5
+    config NORDIC_RELAY_PULSE_MS
+        int "Button pulse duration (milliseconds)"
+        range 100 2000
+        default 500
+    endif
+endmenu

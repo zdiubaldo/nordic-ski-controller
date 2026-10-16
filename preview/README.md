@@ -9,14 +9,16 @@ node tools/generate-workouts.cjs
 mkdir -p .local
 cc -std=c11 -Wall -Wextra -Werror \
   -Ifirmware/components/control/include -Ifirmware/components/test_session/include \
+  -Ifirmware/components/motion/include -Ifirmware/components/control_service/include \
   firmware/components/control/control.c firmware/components/test_session/test_session.c \
-  preview/controller.c -o .local/preview-controller
+  firmware/components/motion/motion.c firmware/components/motion/motion_memory.c \
+  firmware/components/control_service/control_service.c preview/controller.c -lm -o .local/preview-controller
 node preview/server.cjs
 ```
 
 Open http://127.0.0.1:8766/. Enable controls, Start, adjust speed/incline, and changes apply automatically while running. Stop clears requests. Closing the page stops heartbeats, so an active session faults after three seconds. Reopening does not restart it; enable controls, reset the fault, then Start.
 
-The preview listens only on localhost. State lives in memory and resets when the server restarts. Keep only one controlling tab open. The C loop checks deadlines every 20 ms independently of page requests; the HTTP adapter is preview-only and does not emulate the ESP32 radio or electrical behavior.
+The preview listens only on localhost. State lives in memory and resets when the server restarts. Multiple tabs may observe; only one owns controls, and any registered tab can Stop. The C loop checks deadlines every 20 ms independently of page requests; the HTTP adapter is preview-only and does not emulate the ESP32 radio or electrical behavior.
 
 ## Preset workouts
 
@@ -25,3 +27,5 @@ Choose Steady, Intervals, or Rolling Hills before starting. Set 1–120 whole mi
 Manual speed/incline changes override the current segment only. The next segment restores the preset targets. Stop cancels the workout; there is no automatic resume after a stop, fault, reconnect, or restart. Switching away from the browser page requests Stop, and loss of heartbeats faults an active session.
 
 These profiles are software-only examples, not machine commissioning values or training prescriptions. The JSON definitions live in `firmware/workouts/`; see [the workout authoring guide](../firmware/workouts/README.md). After editing, regenerate and recompile the native controller, then restart the preview. The webpage obtains names, descriptions, defaults, and segments from the running controller’s `/api/workouts` catalog. Physical outputs remain disabled. The real machine will also need approved speed/incline transition limits before these targets can drive hardware.
+
+For the physical-style button interface without hardware, start the server with `NORDIC_BUTTON_PREVIEW=1`. This advertises raw button support alongside the restored numeric controls and workouts; all original page controls remain usable. The preview still does not open hardware. See [the v1 contract](../docs/control-service.md).

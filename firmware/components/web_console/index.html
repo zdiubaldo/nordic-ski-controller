@@ -16,7 +16,7 @@ main{padding-bottom:120px}.actions{position:fixed;bottom:0;left:50%;transform:tr
 <header class="header"><div class="identity"><img class="logo" src="/assets/logo.svg" alt="Team Summit Colorado"><span class="divider"></span><div><div class="eyebrow">Team Summit Nordic</div><h1>Training controller</h1></div></div><div class="status" role="status" aria-live="polite"><span id="dot"></span><span id="connection">Connecting…</span></div></header>
 <section class="hero"><img class="hero-photo" src="/assets/hero.jpg" alt="Nordic skiing at Team Summit"><div class="hero-copy"><span class="badge" id="outputNotice">Physical outputs disabled</span><h2>Your pace. Your climb.</h2><p>Set your speed and incline from one place.</p></div></section>
 <div class="toolbar"><div class="units" role="group" aria-label="Speed units"><button id="kmh" aria-pressed="true">km/h</button><button id="mph" aria-pressed="false">mph</button></div><div class="mode">Session <span id="mode">Connecting</span></div><button class="quiet" id="claim" disabled>Enable controls</button></div>
-<section class="panel workouts" aria-label="Workout selection">
+<section id="workoutSection" class="panel workouts" aria-label="Workout selection">
 <div class="panel-heading"><h2>Your workout</h2><span class="index">PRESET SESSIONS</span></div>
 <div class="workout-options" id="workoutOptions" role="group" aria-label="Workout"><button class="quiet" id="manual" aria-pressed="true">Manual</button></div>
 <p id="workoutDescription">Set your own speed and incline.</p>
@@ -43,20 +43,22 @@ main{padding-bottom:120px}.actions{position:fixed;bottom:0;left:50%;transform:tr
 <p id="workoutProgress" role="status">Manual control</p><p id="workoutNext"></p>
 </section>
 <div class="panels">
-<section class="panel" aria-label="Speed control"><div class="panel-heading"><h2>Speed</h2><span class="index">01 / PACE</span></div><div class="reading"><strong id="acceptedSpeed">—</strong><span id="speedUnit">km/h</span></div><p class="caption">Accepted request · <span id="speedAlternate">— mph</span></p><div class="setpoint"><button class="step" id="speedDown" aria-label="Decrease speed" disabled>−</button><div class="number-wrap"><label for="speed">SET SPEED</label><input id="speed" type="number" min="0" max="18" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="speedUp" aria-label="Increase speed" disabled>+</button></div><input class="slider" id="speedSlider" type="range" min="0" max="18" step="0.5" value="0" aria-label="Speed slider" disabled><div class="scale"><span>0</span><span id="speedMax">18 km/h</span></div></section>
-<section class="panel" aria-label="Incline control"><div class="panel-heading"><h2>Incline</h2><span class="index">02 / CLIMB</span></div><div class="reading"><strong id="acceptedGrade">—</strong><span>% grade</span></div><p class="caption">Controller-accepted request</p><div class="setpoint"><button class="step" id="gradeDown" aria-label="Decrease incline" disabled>−</button><div class="number-wrap"><label for="grade">SET INCLINE</label><input id="grade" type="number" min="0" max="10" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="gradeUp" aria-label="Increase incline" disabled>+</button></div><input class="slider" id="gradeSlider" type="range" min="0" max="10" step="0.5" value="0" aria-label="Incline slider" disabled><div class="scale"><span>0%</span><span>10%</span></div></section>
+<section class="panel" aria-label="Speed control"><div class="panel-heading"><h2>Speed</h2><span class="index">01 / PACE</span></div><div class="reading"><strong id="acceptedSpeed">—</strong><span id="speedUnit">km/h</span></div><p class="caption"><span id="speedCaption">Accepted request · </span><span id="speedAlternate">— mph</span></p><div class="setpoint"><button class="step" id="speedDown" aria-label="Decrease speed" disabled>−</button><div class="number-wrap"><label for="speed">SET SPEED</label><input id="speed" type="number" min="0" max="18" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="speedUp" aria-label="Increase speed" disabled>+</button></div><input class="slider" id="speedSlider" type="range" min="0" max="18" step="0.5" value="0" aria-label="Speed slider" disabled><div class="scale"><span>0</span><span id="speedMax">18 km/h</span></div></section>
+<section class="panel" aria-label="Incline control"><div class="panel-heading"><h2>Incline</h2><span class="index">02 / CLIMB</span></div><div class="reading"><strong id="acceptedGrade">—</strong><span>% grade</span></div><p class="caption" id="gradeCaption">Controller-accepted request</p><div class="setpoint"><button class="step" id="gradeDown" aria-label="Decrease incline" disabled>−</button><div class="number-wrap"><label for="grade">SET INCLINE</label><input id="grade" type="number" min="0" max="10" step="0.5" value="0.0" inputmode="decimal" disabled></div><button class="step" id="gradeUp" aria-label="Increase incline" disabled>+</button></div><input class="slider" id="gradeSlider" type="range" min="0" max="10" step="0.5" value="0" aria-label="Incline slider" disabled><div class="scale"><span>0%</span><span>10%</span></div></section>
 </div>
 <div class="actions"><button class="primary start" id="runToggle" disabled>▶ Start</button></div>
 <p class="feedback" id="message" role="status" aria-live="polite">Waiting for controller.</p>
-<div class="bottom"><p class="hint">Manual starts at zero. Presets start at their warm-up speed and stop when finished. Changes during a workout apply to the current segment.<br>Development limits only · No machine movement or measured speed.</p><button class="quiet" id="reset" disabled>Reset fault</button></div>
-<details><summary>Connection details</summary><p id="detail">Waiting for a live status report.</p><p>Controller uptime: <span id="uptime">—</span></p></details>
+<div class="bottom"><p id="usageHint" class="hint">Manual starts at zero. Presets start at their warm-up speed and stop when finished. Changes during a workout apply to the current segment.<br>Development limits only · No machine movement or measured speed.</p><button class="quiet" id="reset" disabled>Reset fault</button></div>
+<details><summary>Connection details</summary><p id="driverDetail">Measured speed and incline: unknown · No physical sensors connected.</p><p id="detail">Waiting for a live status report.</p><p>Controller uptime: <span id="uptime">—</span></p></details>
 <footer><span>TEAM SUMMIT COLORADO</span><span>LOCAL WI-FI · NO INTERNET REQUIRED</span></footer>
 </main>
 <script>
 const element=id=>document.getElementById(id);
+let clientId=0;
 let token=null,sequence=0,state=null,online=false,busy=false,stopPending=false;
 let foregroundBusy=false,targetsPending=false,targetsTimer=null;
 let speedUnit='kmh',draftSpeedMps=0;
+let commandEpoch=0,queuedAction=null,statusReceivedAt=0,displayElapsed=0;
 let selectedWorkout='manual',lastWorkoutSegment='';
 let workoutCatalog=[];
 const workoutButtons=new Map([['manual',element('manual')]]);
@@ -139,13 +141,24 @@ function renderInclineProfile(w,active){
   element('profilePosition').textContent=active?Math.round(fraction*100)+'% complete':complete?'Complete':'Preview';
   element('profileDuration').textContent=Number.isFinite(duration)&&duration>0?clockText(duration):'Finish';
 }
-function workoutReadings(){
+function displayedWorkout(){
   const w=state?.workout;
+  if(!w?.active||!online)return w;
+  // Interpolate only the display, bounded by the last confirmed segment.
+  const age=Math.max(0,performance.now()-statusReceivedAt);
+  const delta=Math.min(age,1500,w.segment_remaining_ms);
+  const elapsed=Math.min(w.duration_ms,w.elapsed_ms+delta);
+  displayElapsed=Math.max(displayElapsed,elapsed);
+  const advance=Math.max(0,displayElapsed-w.elapsed_ms);
+  return {...w,elapsed_ms:displayElapsed,segment_remaining_ms:Math.max(0,w.segment_remaining_ms-advance)};
+}
+function workoutReadings(){
+  const w=displayedWorkout();
   const active=online&&w?.active;
   renderInclineProfile(w,active);
   element('workoutProgress').textContent=!online?'Workout status unavailable':active?
     (workoutCatalog.find(d=>d.id===w.id)?.name||w.id)+' · Segment '+(w.segment+1)+' / '+w.segment_count+' · '+clockText(w.segment_remaining_ms)+' in segment · '+clockText(w.duration_ms-w.elapsed_ms)+' remaining':
-    w?.complete?'Workout complete':selectedWorkout==='manual'?'Manual control':'Ready · Press Start to begin the warm-up';
+    state?.mode==='fault'?'Workout interrupted · Reset required':w?.complete?'Workout complete':selectedWorkout==='manual'?'Manual control':'Ready · Press Start to begin the warm-up';
   element('workoutNext').textContent=active?(w.segment+1===w.segment_count?'Next: finish and stop':
     'Next: '+(w.next_speed_mps*factors[speedUnit]).toFixed(1)+' '+unitNames[speedUnit]+' · '+w.next_grade.toFixed(1)+'% incline')+
     (w.overridden?' · Manual adjustment for this segment':''):'';
@@ -189,33 +202,55 @@ function adjustGrade(delta){
   element('grade').value=value.toFixed(1);element('gradeSlider').value=value;
   scheduleTargets();
 }
+function ownsControl(){return !!token && state?.owner_client_id===clientId;}
 function controls(){
   const usable=online&&state?.software_test;
-  element('claim').disabled=!usable||foregroundBusy||!!token||state.session_active;
-  const running=state?.mode==='running';
+  const owns=ownsControl(),running=state?.mode==='running';
+  element('claim').disabled=!usable||foregroundBusy||owns||state.session_active;
   const toggle=element('runToggle');
   toggle.textContent=!online?'Unavailable':state?.mode==='fault'?'Reset required':running?'■ Stop':'▶ Start';
   toggle.className=running?'primary stop':'primary start';
-  toggle.disabled=!usable||!token||state.mode==='fault'||(!running&&foregroundBusy);
-  element('reset').disabled=!usable||foregroundBusy||!token||state.mode!=='fault';
+  toggle.disabled=!usable||!token||state.mode==='fault'||(!running&&(!owns||foregroundBusy));
+  element('reset').disabled=!usable||foregroundBusy||!owns||state.mode!=='fault';
   for(const id of ['speed','speedSlider','speedUp','speedDown','grade','gradeSlider','gradeUp','gradeDown'])
-    element(id).disabled=!usable||!token||state.mode==='fault';
+    element(id).disabled=!usable||!owns||foregroundBusy||state.mode==='fault';
+  element('speedCaption').textContent='Accepted request · ';
+  element('gradeCaption').textContent='Controller-accepted request';
   for(const button of workoutButtons.values())button.disabled=running||foregroundBusy;
   for(const id of ['duration','intensity'])element(id).disabled=running||foregroundBusy;
-  element('claim').textContent=token?'Controls enabled':state?.session_active?'In use on another screen':'Enable controls';
+  element('usageHint').textContent='Manual starts at zero. Presets start at their warm-up speed and stop when finished. Changes during a workout apply to the current segment. Development limits only · No machine movement or measured speed.';
+  element('claim').textContent=owns?'Controls enabled':state?.session_active?'In use on another screen':'Enable controls';
+
 }
 function render(next){
+  if(next.protocol_version!==1)throw new Error('Unsupported controller protocol');
+  if(state && next.boot_id===state.boot_id && BigInt(next.revision)<BigInt(state.revision))return;
+  if(state && next.boot_id!==state.boot_id){token=null;clientId=0;clearPendingTargets();queuedAction=null;}
+  if(state && next.control_epoch!==state.control_epoch){clearPendingTargets();queuedAction=null;}
+
   if(!['idle','running','fault'].includes(next.mode)||!Number.isFinite(next.sample_age_ms)||
      next.sample_age_ms<0||next.sample_age_ms>1000)throw new Error('Stale status');
+  const previous=state;
+  if(!online||!next.workout?.active||!previous?.workout?.active||
+     previous.workout.id!==next.workout.id||next.workout.elapsed_ms<previous.workout.elapsed_ms)
+    displayElapsed=next.workout?.elapsed_ms||0;
+  else displayElapsed=Math.max(displayElapsed,next.workout.elapsed_ms);
+  statusReceivedAt=performance.now();
   state=next;online=true;
 
   element('connection').textContent=state.local_preview?'Local preview connected':'Connected';
-  element('outputNotice').textContent=state.local_preview?'Local preview · No hardware connected':'Physical outputs disabled';element('dot').className='online';
+  element('outputNotice').textContent=state.local_preview?'Local preview · No hardware connected':state.physical_outputs?'Physical relays enabled · Unloaded bench':'Physical outputs disabled';element('dot').className='online';
   element('mode').textContent=state.mode;
+  if(state.driver)element('driverDetail').textContent='Memory driver · Last speed command '+(state.driver.commanded_speed_mps*factors[speedUnit]).toFixed(1)+' '+unitNames[speedUnit]+' · Last incline command '+state.driver.commanded_grade_percent.toFixed(1)+'%. Measured speed/incline: unknown. Feedback is an injected test fixture.';
+  if(state.relays?.enabled){
+    const r=state.relays;
+    const active=r.known?Array.from({length:8},(_,i)=>i+1).filter(n=>r.mask&(1<<(n-1))).join(', ')||'none':'unknown';
+    element('driverDetail').textContent='Physical relay commands: '+active+'. Start CH'+r.start+'; Stop CH'+r.stop+'; speed +/− CH'+r.speed_up+'/'+r.speed_down+'; incline +/− CH'+r.incline_up+'/'+r.incline_down+'. Button pulses '+r.pulse_ms+' ms. '+(r.fault?'Relay fault: restart required. ':'')+'Speed/incline feedback is injected; no movement or contact position is measured.';
+  }
   element('uptime').textContent=Math.floor(state.uptime_ms/1000)+' seconds';
   speedReadings();
   element('acceptedGrade').textContent=Number(state.requested_grade_percent).toFixed(1);
-  element('detail').textContent=state.fault?'Connection or controller fault. Enable controls, reset the fault, then start again.':'Connected locally. Physical outputs remain disabled.';
+  element('detail').textContent=state.fault?'Connection or controller fault. Enable controls, reset the fault, then start again.':state.physical_outputs?'Unloaded relay controls enabled. Stop or connection timeout requests a Stop pulse.':'Connected locally. Physical outputs remain disabled.';
   if(!state.software_test)element('message').textContent='Software test mode is disabled in this build.';
   else if(element('message').textContent==='Waiting for controller.')element('message').textContent='Enable controls to begin.';
   const w=state.workout;
@@ -234,12 +269,20 @@ function render(next){
     if(w?.complete)element('message').textContent='Workout complete. Speed and incline requests cleared.';
     element('grade').value='0';element('gradeSlider').value='0';
   }
+  if(!ownsControl()){
+    draftSpeedMps=state.requested_speed_mps;chooseUnit(speedUnit);
+    element('grade').value=String(state.requested_grade_percent);
+    element('gradeSlider').value=String(state.requested_grade_percent);
+  }
+  if(state.mode==='fault')element('message').textContent='Session interrupted. Enable controls if needed, then reset the fault. Starting again is always manual.';
+  else if(state.mode==='running'&&!ownsControl())element('message').textContent='Viewing an active session. This page does not own control; if the original page was closed, the session will stop.';
+  else if(previous?.mode==='running'&&state.mode==='idle'&&!w?.complete)element('message').textContent='Session stopped. Press Start when ready.';
   lastWorkoutSegment=key;
   workoutReadings();
   controls();
 }
 function unavailable(){
-  online=false;token=null;stopPending=false;clearPendingTargets();
+  online=false;token=null;clientId=0;stopPending=false;queuedAction=null;clearPendingTargets();
   element('connection').textContent='Controller unavailable';element('dot').className='';
   element('mode').textContent='Unknown';element('uptime').textContent='—';
   workoutReadings();speedReadings();element('acceptedGrade').textContent='—';
@@ -248,15 +291,22 @@ function unavailable(){
 }
 async function request(path,options={}){
   const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),2000);
-  try{return await fetch(path,{...options,cache:'no-store',signal:abort.signal});}
+  try{
+    const response=await fetch(path,{...options,cache:'no-store',signal:abort.signal});
+    const body=await response.text(); // Timeout covers the body too, not just headers.
+    return {ok:response.ok,status:response.status,json:async()=>JSON.parse(body),text:async()=>body};
+  }
   finally{clearTimeout(timer);}
 }
 async function act(action){
-  if(action==='stop')clearPendingTargets();
+  if(action==='stop'){clearPendingTargets();queuedAction=null;}
+  const buttonAction=['speed_up','speed_down','incline_up','incline_down'].includes(action);
+  if(buttonAction && (busy||!ownsControl()||state?.button_busy))return;
   if(action==='targets'&&(!token||state?.mode!=='running'))return;
   if(busy){
     if(action==='stop')stopPending=true;
     else if(action==='targets'&&!stopPending)targetsPending=true;
+    else if(!['heartbeat','targets'].includes(action)&&!stopPending)queuedAction=action;
     return;
   }
   if(action==='targets')targetsPending=false;
@@ -275,43 +325,51 @@ async function act(action){
       element('message').textContent='Choose 1–120 whole minutes and intensity from 50–150%.';return;
     }
   }
-  if(action!=='claim'&&!token)return;
+  if(!token && !['connect','claim'].includes(action))return;
+  if(action==='claim'&&!token){await act('connect');if(!token)return;}
+  commandEpoch++;
   busy=true;foregroundBusy=!['heartbeat','targets'].includes(action);controls();
   try{
     const options={method:'POST',headers:{'X-Nordic-Test':'1'}};
-    const path=action==='claim'?'/api/test/claim':'/api/test/command';
-    if(action!=='claim')options.body=`${token} ${++sequence} ${action} ${speed} ${grade}`;
+    const path=action==='connect'?'/api/session':'/api/test/command';
+    if(action!=='connect')options.body=`v1 ${token} ${++sequence} ${state.control_epoch} ${action} ${speed} ${grade}`;
     const response=await request(path,options);
+    const result=await response.json();
     if(!response.ok){
-      element('message').textContent=await response.text();
-      if(action==='heartbeat')token=null;
+      if(result.protocol_version===1)render(result);
+      const reason=result.command_result?.reason||'request_rejected';
+      element('message').textContent='Command rejected: '+reason.replaceAll('_',' ')+'.';
+      if(reason==='unauthorized'){token=null;clientId=0;}
       return;
     }
-    const result=await response.json();
-    if(action==='claim'){token=result.token;sequence=0;element('message').textContent='Controls enabled. Choose a workout or use Manual, then press Start.';}
+    if(action==='connect'){token=result.token;clientId=result.client_id;sequence=0;}
     else{
       render(result);
       if(action==='start'||action==='stop'||action==='reset'){
         draftSpeedMps=0;chooseUnit(speedUnit);element('grade').value='0.0';element('gradeSlider').value='0';
       }
       if(action.startsWith('w:'))element('message').textContent='Workout started. Manual adjustments last until the next segment.';
-      const messages={start:'Session started. Adjust speed and incline directly.',stop:'Stopped. Speed and incline requests cleared.',reset:'Fault cleared. Press Start when ready.',targets:'Settings applied.'};
+      const messages={claim:'Controls enabled. Press Start when ready.',release:'Control released.',speed_up:'Speed increase requested.',speed_down:'Speed decrease requested.',incline_up:'Incline increase requested.',incline_down:'Incline decrease requested.',start:'Session started. Adjust speed and incline directly.',stop:'Stopped. Speed and incline requests cleared.',reset:'Fault cleared. Press Start when ready.',targets:'Settings applied.'};
       if(messages[action])element('message').textContent=messages[action];
     }
   }catch(error){unavailable();element('message').textContent='Request outcome unknown. Reconnect, check state, and take control again.';}
   finally{
     busy=false;foregroundBusy=false;controls();
     if(stopPending){stopPending=false;clearPendingTargets();void act('stop');}
+    else if(queuedAction){const next=queuedAction;queuedAction=null;void act(next);}
     else if(targetsPending){targetsPending=false;void act('targets');}
   }
 }
 async function poll(){
+  const epoch=commandEpoch;
   try{
+    if(busy)return;
     const response=await request('/api/status');
+    if(epoch!==commandEpoch||busy)return;
     if(!response.ok)throw new Error('Status unavailable');
     render(await response.json());
-    if(token&&!document.hidden&&!busy)await act('heartbeat');
-  }catch(error){unavailable();}
+    if(!document.hidden&&!busy){if(token)await act('heartbeat');else await act('connect');}
+  }catch(error){if(epoch===commandEpoch&&!busy)unavailable();}
   finally{setTimeout(poll,500);}
 }
 for(const unit of ['kmh','mph'])element(unit).addEventListener('click',()=>chooseUnit(unit));
@@ -333,11 +391,11 @@ for(const [id,action] of Object.entries({claim:'claim',reset:'reset'}))
   element(id).addEventListener('click',()=>act(action));
 element('runToggle').addEventListener('click',()=>{
   if(online&&token&&state?.mode==='running')void act('stop');
-  else if(online&&token&&state?.mode==='idle'&&!foregroundBusy)void act(selectedWorkout==='manual'?'start':'w:'+selectedWorkout);
+  else if(online&&ownsControl()&&state?.mode==='idle'&&!foregroundBusy)void act(selectedWorkout==='manual'?'start':'w:'+selectedWorkout);
 });
 for(const id of ['duration','intensity'])element(id).addEventListener('input',()=>workoutReadings());
 element('manual').addEventListener('click',()=>chooseWorkout('manual'));
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&token)void act('stop');});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&ownsControl())void act('stop');});
 async function loadWorkouts(){
   try{
     const response=await request('/api/workouts');
@@ -346,6 +404,7 @@ async function loadWorkouts(){
   }catch(error){element('workoutDescription').textContent='Workouts unavailable. Refresh to retry; manual control is available.';}
   poll();
 }
+setInterval(()=>{if(online&&state?.workout?.active&&!document.hidden)workoutReadings();},100);
 loadWorkouts();
 </script>
 </html>

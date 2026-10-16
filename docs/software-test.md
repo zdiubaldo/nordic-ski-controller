@@ -1,5 +1,7 @@
 # Software-only tablet control test
 
+**Unloaded relay option:** `CONFIG_NORDIC_RELAY_CONTROL` additionally sends accepted session requests to configurable physical relay outputs. The motion feedback described below remains a test fixture. See [relay mapping](relay-driver.md#existing-controls-on-the-unloaded-board) for behavior and limitations.
+
 Enable `CONFIG_NORDIC_SOFTWARE_TEST` in a local build to exercise controller logic without any physical outputs. It defaults off. The Hosyond bench build enables it; the default Waveshare build does not. The real application controller remains unconfigured. A separate test session uses the same C control component with artificial limits of 0–5 m/s and 0–10% grade and a three-second timeout. None of these values configure a machine.
 
 ## Tablet workflow
@@ -32,3 +34,9 @@ The existing authenticated command endpoint also accepts `w:<id>` (for example `
 The shared C runner chooses a segment using its relative duration weight using elapsed monotonic time. `targets` overrides only the current segment; a segment transition restores the preset. Automatic transitions do not renew the command timeout. Stop, faults, and expired ownership cancel the workout. Finishing the last segment returns to idle with zero requested speed and grade. A new Start always starts from the beginning.
 
 Status includes a `workout` object with stable string preset ID (`manual` for manual mode), segment count, active/complete flags, zero-based segment, elapsed and duration milliseconds, segment time remaining, intensity multiplier, next speed/grade, and manual override flag. The UI displays speed in the selected unit while the protocol retains m/s.
+
+## Browser recovery and timing
+
+Foreground commands queue behind an in-flight heartbeat; Stop clears queued target changes and takes priority. Inputs are unavailable during Start/Stop/Reset so their replies cannot erase changes entered during those actions. Status requests started before a newer command are discarded when they return. A fault replaces workout-running messages, and non-owning viewers synchronize their disabled input fields with accepted controller requests. Refresh intentionally does not retain ownership or automatically resume a session.
+
+The browser interpolates progress from the last confirmed controller elapsed time using its monotonic clock. It advances for at most 1.5 seconds without a fresh report and never advances beyond a confirmed segment boundary or declares completion itself. Device timing and segment changes remain authoritative. HTTP timeouts include response bodies.

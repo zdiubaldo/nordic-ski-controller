@@ -15,8 +15,16 @@ jobs:
           /tmp/control-tests
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/relay/include firmware/components/relay/relay.c tests/relay_tests.c -o /tmp/relay-tests
           /tmp/relay-tests
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/relay_control/include firmware/components/relay_control/relay_mapping.c tests/relay_mapping_tests.c -o /tmp/relay-mapping-tests
+          /tmp/relay-mapping-tests
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/control/include -Ifirmware/components/test_session/include firmware/components/control/control.c firmware/components/test_session/test_session.c tests/session_tests.c -lm -o /tmp/session-tests
           /tmp/session-tests
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/motion/include firmware/components/motion/motion.c firmware/components/motion/motion_memory.c tests/motion_tests.c -lm -o /tmp/motion-tests
+          /tmp/motion-tests
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/control/include -Ifirmware/components/test_session/include -Ifirmware/components/motion/include -Ifirmware/components/control_service/include firmware/components/control/control.c firmware/components/test_session/test_session.c firmware/components/motion/motion.c firmware/components/motion/motion_memory.c firmware/components/control_service/control_service.c tests/service_tests.c -lm -o /tmp/service-tests
+          /tmp/service-tests
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/control/include -Ifirmware/components/test_session/include -Ifirmware/components/motion/include -Ifirmware/components/control_service/include firmware/components/control/control.c firmware/components/test_session/test_session.c firmware/components/motion/motion.c firmware/components/motion/motion_memory.c firmware/components/control_service/control_service.c tests/contract_tests.c -lm -o /tmp/contract-tests
+          /tmp/contract-tests
   browser-logic:
     runs-on: ubuntu-latest
     steps:

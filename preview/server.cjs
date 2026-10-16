@@ -5,7 +5,7 @@ const crypto = require('node:crypto');
 const {spawn} = require('node:child_process');
 const readline = require('node:readline');
 const root = path.resolve(__dirname, '..');
-const controller = spawn(path.join(root,'.local','preview-controller'), [], {stdio:['pipe','pipe','inherit']});
+const controller = spawn(path.join(root,'.local','preview-controller'), process.env.NORDIC_BUTTON_PREVIEW==='1'?['--buttons']:[], {stdio:['pipe','pipe','inherit']});
 let waiting = null, dead = false, queue = Promise.resolve();
 const fail = () => {dead=true;if(waiting){waiting.reject(new Error('Controller stopped'));waiting=null;}};
 controller.on('error',fail);controller.on('exit',fail);
@@ -41,23 +41,21 @@ const server=http.createServer(async(req,res)=>{
       return reply(res,200,JSON.stringify(await command('workouts')),'application/json');
     if(req.method==='GET'&&req.url==='/api/status')
       return reply(res,200,JSON.stringify(await command('status')),'application/json');
-    if(req.method!=='POST'||req.headers['x-nordic-test']!=='1')return reply(res,404,'Not found');
+    if(req.method!=='POST')return reply(res,404,'Not found');
+    if(req.headers['x-nordic-test']!=='1')return reply(res,400,'Invalid command header');
     let body='';
-    for await (const chunk of req){body+=chunk.toString('utf8');if(body.length>127)return reply(res,400,'Command too large');}
-    if(req.url==='/api/test/claim'&&!body){
+    for await (const chunk of req){body+=chunk.toString('utf8');if(body.length>159)return reply(res,400,'Command too large');}
+    if(['/api/test/claim','/api/session'].includes(req.url)&&!body){
       const token=crypto.randomBytes(8).toString('hex');
-      const result=await command('claim '+token);
-      return result.ok?reply(res,200,JSON.stringify({token}),'application/json'):reply(res,409,'Another page owns control. Wait three seconds after closing it.');
+      const result=await command((req.url==='/api/session'?'register ':'claim ')+token);
+      return reply(res,result.ok?200:409,JSON.stringify(result.ok?
+        {protocol_version:1,token,client_id:result.command_result.client_id,control_epoch:result.control_epoch}:result),'application/json');
     }
     if(req.url==='/api/test/command'){
-      const fields=body.split(' ');
-      if(fields.length!==5||!/^[0-9a-f]{16}$/.test(fields[0])||!/^\d{1,10}$/.test(fields[1])||
-         Number(fields[1])<1||Number(fields[1])>0xffffffff||
-         (!['start','stop','targets','heartbeat','reset'].includes(fields[2])&&!/^w:[a-z][a-z0-9-]{0,23}$/.test(fields[2]))||
-         !fields.slice(3).every(v=>/^-?(?:\d+\.?\d*|\.\d+)$/.test(v)&&Number.isFinite(Number(v))))
-        return reply(res,400,'Malformed command');
+      if(!/^v1 [0-9a-f]{16} [0-9]{1,10} [0-9]{1,10} [a-z_:0-9-]+ -?(?:[0-9]+\.?[0-9]*|\.[0-9]+) -?(?:[0-9]+\.?[0-9]*|\.[0-9]+)$/.test(body))
+        return reply(res,400,'Malformed v1 command');
       const result=await command('command '+body);
-      return result.ok?reply(res,200,JSON.stringify(result),'application/json'):reply(res,409,'Command rejected: check session, state, and limits');
+      return reply(res,result.ok?200:409,JSON.stringify(result),'application/json');
     }
     reply(res,404,'Not found');
   }catch(error){reply(res,503,'Local controller unavailable');}

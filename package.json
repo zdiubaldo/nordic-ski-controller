@@ -1,0 +1,11 @@
+{
+  "name": "nordic-ski-controller",
+  "private": true,
+  "scripts": {
+    "test:device": "playwright test",
+    "test:device:report": "playwright show-report .local/device-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0"
+  }
+}

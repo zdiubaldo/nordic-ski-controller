@@ -1,5 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
-#include "test_session.h"
+#include "control_service.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,15 +13,18 @@ static int64_t now_us(void)
     clock_gettime(CLOCK_MONOTONIC, &t);
     return (int64_t)t.tv_sec * 1000000 + t.tv_nsec / 1000;
 }
-int main(void)
+int main(int argc,char **argv)
 {
-    test_session_t session;
-    test_session_init(&session, true);
-    const int64_t boot = now_us();
+    control_service_t service;
+    motion_memory_t memory;
+    control_service_memory_init(&service, &memory, true);
+    service.button_mode=argc>1 && !strcmp(argv[1],"--buttons");
+    service.boot_id=(uint32_t)now_us();
     setvbuf(stdin, NULL, _IONBF, 0);
     setvbuf(stdout, NULL, _IOLBF, 0);
     for (;;) {
-        test_session_tick(&session, now_us());
+        control_service_memory_sample(&memory,now_us());
+        control_service_tick(&service,now_us());
         fd_set ready;
         FD_ZERO(&ready); FD_SET(STDIN_FILENO, &ready);
         struct timeval timeout = {.tv_usec = 20000};
@@ -32,35 +35,25 @@ int main(void)
         if (!fgets(line, sizeof(line), stdin)) return 0;
         int64_t now = now_us();
         if (!strcmp(line, "workouts\n")) { puts(test_session_workout_catalog()); continue; }
+        control_service_memory_sample(&memory,now);
         bool accepted = false;
+        service_command_t command={.protocol_version=1,.client={SERVICE_HTTP,1}};
         uint64_t token;
-        uint32_t sequence;
-        float speed, grade;
-        char action[32];
         if (!strcmp(line, "status\n")) accepted = true;
+        else if (sscanf(line, "register %16" SCNx64, &token) == 1)
+        { command.action=SERVICE_REGISTER;command.token=token;accepted=control_service_command(&service,now,&command); }
         else if (sscanf(line, "claim %16" SCNx64, &token) == 1)
-            accepted = test_session_claim(&session, now, token);
-        else if (sscanf(line, "command %16" SCNx64 " %" SCNu32 " %31s %f %f",
-                        &token, &sequence, action, &speed, &grade) == 5) {
-            if (!strncmp(action, "w:", 2))
-                accepted = test_session_start_workout(&session, now, token, sequence, action + 2, speed, grade);
-            const char *names[] = {"start", "stop", "targets", "heartbeat", "reset"};
-            for (int i = 0; i < 5; ++i)
-                if (!strcmp(action, names[i]))
-                    accepted = test_session_command(&session, now, token, sequence,
-                                                     (test_action_t)i, speed, grade);
+        { command.action=SERVICE_CLAIM;command.token=token;accepted=control_service_command(&service,now,&command); }
+        else if (!strncmp(line,"command ",8)) {
+            line[strcspn(line,"\n")]=0;
+            if(control_service_parse(line+8,strlen(line+8),&command))
+                accepted=control_service_command(&service,now,&command);
         }
-        test_session_tick(&session, now_us());
-        const char *mode = session.control.mode == CONTROL_IDLE ? "idle" :
-                           session.control.mode == CONTROL_RUNNING ? "running" : "fault";
-        char workout[400];
-        test_session_workout_json(&session, workout, sizeof(workout));
-        printf("{\"ok\":%s,\"local_preview\":true,\"software_test\":true,"
-               "\"mode\":\"%s\",\"fault\":%d,\"session_active\":%s,"
-               "\"requested_speed_mps\":%.3f,\"requested_grade_percent\":%.3f,"
-               "\"physical_outputs\":false,\"uptime_ms\":%" PRId64 ",\"sample_age_ms\":0,\"workout\":%s}\n",
-               accepted ? "true" : "false", mode, (int)session.control.fault,
-               session.owner ? "true" : "false", (double)session.control.requested_speed_mps,
-               (double)session.control.requested_grade_percent, (now - boot) / 1000, workout);
+        control_service_memory_sample(&memory,now_us());
+        control_service_tick(&service,now_us());
+        char body[3200];
+        int length=control_service_json(&service,now_us(),true,accepted,body,sizeof(body));
+        if(length<0 || (size_t)length>=sizeof(body))return 1;
+        puts(body);
     }
 }
