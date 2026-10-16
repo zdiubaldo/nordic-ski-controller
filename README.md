@@ -10,30 +10,31 @@ The project uses **ESP-IDF 6.1 and C**. It contains an ESP32-S3 application, a s
 
 The application boots with an unconfigured controller and runs its control tick independently every 20 ms. It rejects start commands until commissioned limits and healthy interlock feedback are supplied. An opt-in [unloaded relay mode](docs/relay-driver.md) connects the existing controls to configurable relay outputs. Default builds leave it disabled; output-latch acknowledgements do not verify physical contact states. Keep machine wiring disconnected during board bring-up.
 
-The owner selected a controller-hosted Wi-Fi network and browser interface. A password-protected access point and tablet interface are implemented using ESP-IDF. An opt-in [software test mode](docs/software-test.md) supports Start/Stop and speed/incline requests with no physical outputs. Set a local password before flashing; Wi-Fi stays disabled without one. BLE, motion commands, motor control, and feedback remain pending. Further technology choices require owner approval. See [tablet connection](docs/tablet-connection.md).
+The owner selected a controller-hosted Wi-Fi network and browser interface. A password-protected access point and tablet interface are implemented using ESP-IDF. An opt-in [software test mode](docs/software-test.md) supports Start/Stop and speed/incline requests with no physical outputs. Set a local password before flashing; Wi-Fi stays disabled without one. An opt-in [BLE adapter and laptop diagnostic client](docs/ble-client.md) use the same controls and workouts. Laptop BLE controls/workouts and concurrent webpage updates have passed bench testing; two simultaneous BLE centrals, mobile platforms, and longer runs remain to be verified. Custom mobile apps, motor control, and measured feedback remain pending. Further technology choices require owner approval. See [tablet connection](docs/tablet-connection.md).
 
 ## How clients connect
 
 All clients use the same command layer on the ESP32. Wi-Fi/web and USB diagnostics
-are implemented; BLE apps and the wired touchscreen are planned to run alongside
-them. Dashed connections below mark planned interfaces.
+are implemented; the opt-in BLE adapter adds laptop/phone diagnostic connections.
+Custom BLE apps and the wired touchscreen are planned to run alongside them. Dashed connections below mark planned interfaces.
 
 ```mermaid
 flowchart TB
     Web["Phone or tablet browser"] <-->|"Wi-Fi / HTTP"| HTTP
+    Laptop["Laptop / BLE diagnostic client"] <-->|"BLE — opt-in"| BLE
     Apps["iOS and Android apps — planned"] <-.->|"BLE"| BLE
     Screen["Wired touchscreen — planned"] <-.->|"Wired link — to be selected"| Wired
     Computer["Computer / diagnostic client"] <-->|"USB serial — bench builds"| USB
 
     subgraph ESP["ESP32 controller"]
         HTTP["Web adapter"]
-        BLE["BLE adapter — planned"]
+        BLE["BLE adapter — opt-in"]
         Wired["Wired adapter — planned"]
         USB["USB diagnostic adapter"]
         Shared["Shared command layer and status<br/>Ownership, validation, Stop priority<br/>Start/Stop, speed, incline, workouts"]
         Relay["Relay mapping and pulse driver<br/>CH1 Start · CH6 Stop<br/>CH2/3 Speed · CH4/5 Incline"]
         HTTP <--> Shared
-        BLE <-.-> Shared
+        BLE <--> Shared
         Wired <-.-> Shared
         USB <--> Shared
         Shared --> Relay

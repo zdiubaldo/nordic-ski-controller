@@ -73,3 +73,11 @@ Known diagnostic limitation: prolonged status monitoring has occasionally read
 partial JSON replies across serial timeouts. A parse failure does not establish
 the controller state; obtain a complete reply before interpreting the result.
 Improved host-side reply buffering remains follow-up work.
+
+## BLE administration
+
+Opt-in BLE builds add `ID ble-pair` (idle-only, opens a 120-second enrollment window
+and returns a temporary six-digit passkey over USB) and `ID ble-forget` (idle-only,
+queues bond removal/disconnection). These operations never claim control or start
+motion. See [BLE client protocol and validation](ble-client.md) for security,
+framing, laptop testing and bond handling. Do not save pairing replies in logs.

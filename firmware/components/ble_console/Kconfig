@@ -1,0 +1,9 @@
+menu "Nordic Bluetooth client"
+    config NORDIC_BLE
+        bool "Enable Nordic BLE adapter"
+        depends on BT_NIMBLE_ENABLED
+        default n
+        help
+            Requires NimBLE, Secure Connections only, two connections and NVS
+            bond persistence. Use ble.defaults together with local board defaults.
+endmenu

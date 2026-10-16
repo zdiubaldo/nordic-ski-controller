@@ -1,6 +1,6 @@
 # Shared control contract — version 1
 
-Step 1 implements a common service for the existing HTTP webpage, future BLE apps, and a future wired touchscreen. HTTP and the USB diagnostic adapter are connected today. No BLE or wired protocol, mobile framework, or screen hardware is selected by this implementation.
+Step 1 implements a common service for the existing HTTP webpage, future BLE apps, and a future wired touchscreen. HTTP and the USB diagnostic adapter were connected in that step. The subsequent opt-in [BLE adapter](ble-client.md) uses this same contract; custom mobile apps and wired-screen hardware remain separate steps.
 
 ## Authority and control policy
 
@@ -10,7 +10,7 @@ The ESP-IDF `controller_runtime` task owns a single C `control_service`. Adapter
 
 `control_service_set_policy` is the extension point for future shared control. `SERVICE_SHARED_RESERVED` is intentionally rejected: conflict resolution and takeover are not implemented or implicitly enabled. Applications use the same commands regardless of a future ownership-policy implementation.
 
-Transport identities are HTTP=1, BLE=2, wired=3, USB=4. HTTP uses adapter peer 1 plus separate random 64-bit bearer tokens for each page. The controller assigns non-secret client IDs for status. Future BLE/wired adapters must authenticate their links and register their own identities; a token from another transport/peer cannot be used there. Bearer tokens are never included in public status. Current HTTP authorization is the existing WPA2 bench-network boundary and same-origin custom request header; this is not an Internet-facing authentication system.
+Transport identities are HTTP=1, BLE=2, wired=3, USB=4. HTTP uses adapter peer 1 plus separate random 64-bit bearer tokens for each page. The controller assigns non-secret client IDs for status. BLE authenticates encrypted bonded links and registers a distinct peer identity per connection; future wired adapters must also authenticate and register their own identities. A token from another transport/peer cannot be used there. Bearer tokens are never included in public status. Current HTTP authorization is the existing WPA2 bench-network boundary and same-origin custom request header; this is not an Internet-facing authentication system.
 
 ## Commands
 

@@ -81,3 +81,12 @@ See [workout definitions](workouts/README.md). Run `node tools/generate-workouts
 The `motion` component provides configurable limits, rate-limited targets, explicit feedback, and driver fault/stop handling. `motion_memory` records commands and accepts injected feedback without I/O. See [the hardware contract](../docs/generic-hardware.md). The webpage now connects through the [shared control service](../docs/control-service.md) to the memory driver only. Physical outputs remain disabled.
 
 For existing web controls on unloaded relays, see [relay mapping and configuration](../docs/relay-driver.md#existing-controls-on-the-unloaded-board). The editable initial profile is `relay-bench.defaults`; change an existing build through menuconfig.
+
+## Opt-in Bluetooth transport
+
+Combine `ble.defaults` with local board/Wi-Fi configuration to build the NimBLE
+adapter. It leaves the webpage unchanged and shares the existing controller
+runtime. Keep the default disabled configuration for deployments that have not
+completed BLE board acceptance. [BLE protocol and tests](../docs/ble-client.md)
+document USB-assisted enrollment, laptop diagnostics, minimum-MTU framing, and
+Wi-Fi coexistence checks. Mobile apps remain a separately approved step.

@@ -2,6 +2,7 @@
 #include "sdkconfig.h"
 #if defined(CONFIG_NORDIC_SOFTWARE_TEST) && defined(CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG)
 #include "controller_runtime.h"
+#include "ble_console.h"
 #include "relay_control.h"
 #include "driver/usb_serial_jtag.h"
 #include "esp_random.h"
@@ -47,6 +48,17 @@ static void handle(char *line)
     unsigned long id=strtoul(line,&body,10);
     if(!id || id>1000000000UL || *body!=' '){reply(0,"{\"ok\":false,\"error\":\"invalid_envelope\"}");return;}
     body++;
+    if(!strcmp(body,"ble-pair")){
+        uint32_t code=0;esp_err_t error=ble_console_pair(&code);
+        if(error==ESP_OK)snprintf(json,sizeof(json),"{\"ok\":true,\"pairing_seconds\":120,\"passkey\":\"%06" PRIu32 "\"}",code);
+        else snprintf(json,sizeof(json),"{\"ok\":false,\"error\":\"%s\"}",esp_err_to_name(error));
+        reply(id,json);return;
+    }
+    if(!strcmp(body,"ble-forget")){
+        esp_err_t error=ble_console_forget();
+        snprintf(json,sizeof(json),"{\"ok\":%s,\"result\":\"%s\"}",error==ESP_OK?"true":"false",error==ESP_OK?"forget_queued":esp_err_to_name(error));
+        reply(id,json);return;
+    }
     if(!strcmp(body,"status")){status(id,NULL);return;}
     if(!strcmp(body,"workouts")){
         printf("\n@nordic %lu {\"ok\":true,\"workouts\":%s}\n",id,test_session_workout_catalog());

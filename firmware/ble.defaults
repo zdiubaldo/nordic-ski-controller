@@ -1,0 +1,15 @@
+# Opt-in Bluetooth transport. Combine with local board/Wi-Fi configuration.
+CONFIG_BT_ENABLED=y
+CONFIG_BT_NIMBLE_ENABLED=y
+CONFIG_BT_NIMBLE_MAX_CONNECTIONS=2
+CONFIG_BT_NIMBLE_MAX_BONDS=4
+CONFIG_BT_NIMBLE_NVS_PERSIST=y
+CONFIG_BT_NIMBLE_SM_SC=y
+CONFIG_BT_NIMBLE_SM_LEGACY=n
+CONFIG_BT_NIMBLE_ATT_PREFERRED_MTU=247
+CONFIG_ESP_COEX_SW_COEXIST_ENABLE=y
+CONFIG_NORDIC_BLE=y
+
+# BLE plus embedded web assets exceed the original 1 MiB app partition.
+# Standard large layout preserves NVS/PHY offsets and app start at 0x10000.
+CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y

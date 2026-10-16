@@ -25,6 +25,9 @@ jobs:
           /tmp/service-tests
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/control/include -Ifirmware/components/test_session/include -Ifirmware/components/motion/include -Ifirmware/components/control_service/include firmware/components/control/control.c firmware/components/test_session/test_session.c firmware/components/motion/motion.c firmware/components/motion/motion_memory.c firmware/components/control_service/control_service.c tests/contract_tests.c -lm -o /tmp/contract-tests
           /tmp/contract-tests
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g -Ifirmware/components/ble_console/include firmware/components/ble_console/ble_frame.c tests/ble_frame_tests.c -o /tmp/ble-frame-tests
+          /tmp/ble-frame-tests
+          python3 tests/ble_client_tests.py
   browser-logic:
     runs-on: ubuntu-latest
     steps:
@@ -46,4 +49,19 @@ jobs:
         run: |
           . /opt/esp/idf/export.sh
           idf.py set-target ${{ matrix.target }}
+          idf.py build
+  ble-build:
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.1
+    strategy:
+      matrix:
+        target: [esp32, esp32s3]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build opt-in BLE adapter
+        shell: bash
+        working-directory: firmware
+        run: |
+          . /opt/esp/idf/export.sh
+          idf.py -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;ble.defaults" set-target ${{ matrix.target }}
           idf.py build
