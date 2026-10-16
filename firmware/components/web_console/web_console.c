@@ -1,5 +1,6 @@
 #include "web_console.h"
-#include "test_session.h"
+#include "relay_control.h"
+#include "controller_runtime.h"
 #include "esp_random.h"
 #include <inttypes.h>
 #include <stdio.h>
@@ -14,16 +15,11 @@
 #include "esp_timer.h"
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "nvs_flash.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "web_console";
-static portMUX_TYPE status_lock = portMUX_INITIALIZER_UNLOCKED;
-static control_mode_t mode = CONTROL_IDLE;
-static control_fault_t fault = FAULT_NONE;
-static int64_t sampled_at_us;
-static test_session_t session;
-static bool session_initialized;
 extern const unsigned char page_start[] asm("_binary_index_html_start");
 extern const unsigned char page_end[] asm("_binary_index_html_end");
 extern const unsigned char logo_start[] asm("_binary_logo_svg_start");
@@ -31,15 +27,6 @@ extern const unsigned char logo_end[] asm("_binary_logo_svg_end");
 extern const unsigned char hero_start[] asm("_binary_hero_jpg_start");
 extern const unsigned char hero_end[] asm("_binary_hero_jpg_end");
 
-void web_console_publish(const control_t *controller)
-{
-    portENTER_CRITICAL(&status_lock);
-    if (session_initialized) test_session_tick(&session, esp_timer_get_time());
-    mode = controller->mode;
-    fault = controller->fault;
-    sampled_at_us = controller->now_us;
-    portEXIT_CRITICAL(&status_lock);
-}
 static void headers(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Cache-Control", "no-store");
@@ -73,37 +60,42 @@ static esp_err_t workouts_get(httpd_req_t *req)
     httpd_resp_set_type(req, "application/json");
     return httpd_resp_sendstr(req, test_session_workout_catalog());
 }
-static esp_err_t status_get(httpd_req_t *req)
+static esp_err_t send_status(httpd_req_t *req,const service_result_t *result)
 {
-    portENTER_CRITICAL(&status_lock);
-    test_session_t snapshot = session;
-    bool test_enabled = session.enabled;
-    control_mode_t current_mode = test_enabled ? session.control.mode : mode;
-    control_fault_t current_fault = test_enabled ? session.control.fault : fault;
-    float speed = session.control.requested_speed_mps;
-    float grade = session.control.requested_grade_percent;
-    bool owner = session.owner != 0;
-    int64_t sample = sampled_at_us;
-    portEXIT_CRITICAL(&status_lock);
-    const char *name = current_mode == CONTROL_IDLE ? "idle" :
-                       current_mode == CONTROL_RUNNING ? "running" : "fault";
-    char workout[400];
-    test_session_workout_json(&snapshot, workout, sizeof(workout));
-    char body[1024];
-    int length = snprintf(body, sizeof(body),
-        "{\"mode\":\"%s\",\"fault\":%d,\"commissioned\":false,"
-        "\"software_test\":%s,\"session_active\":%s,\"requested_speed_mps\":%.2f,"
-        "\"requested_grade_percent\":%.2f,"
-        "\"motion_available\":false,\"hardware_verified\":false,"
-        "\"uptime_ms\":%" PRId64 ",\"sample_age_ms\":%" PRId64 ",\"workout\":%s}",
-        name, (int)current_fault, test_enabled ? "true" : "false",
-        owner ? "true" : "false", (double)speed, (double)grade, esp_timer_get_time() / 1000,
-        (esp_timer_get_time() - sample) / 1000, workout);
+    // This server runs synchronous handlers on one HTTP task. Keep its large
+    // scratch buffers off the 6 KiB task stack, leaving room for JSON formatting
+    // and lwIP. Revisit this ownership if handlers become asynchronous or another
+    // server instance is introduced. USB uses its own independent buffers.
+    static control_service_t snapshot;
+    static char body[3200];
+    controller_runtime_snapshot(&snapshot);
+    if(result)snapshot.last_result=*result;
+    int length=control_service_json(&snapshot,esp_timer_get_time(),false,!result || result->accepted,body,sizeof(body));
     if (length < 0 || (size_t)length >= sizeof(body)) return ESP_FAIL;
+    relay_control_status_t relay=relay_control_status();
+    int tail=snprintf(body+length-1,sizeof(body)-(size_t)length+1,
+        ",\"relays\":{\"enabled\":%s,\"ready\":%s,\"fault\":%s,\"known\":%s,\"mask\":%u,\"button_ack_event\":%u,"
+        "\"start\":%u,\"stop\":%u,\"speed_up\":%u,\"speed_down\":%u,\"incline_up\":%u,\"incline_down\":%u,\"pulse_ms\":%u}}",
+        relay.enabled?"true":"false",relay.ready?"true":"false",relay.fault?"true":"false",
+        relay.known?"true":"false",relay.mask,(unsigned)relay.button_ack_event,relay.mapping.start,relay.mapping.stop,relay.mapping.speed_up,
+        relay.mapping.speed_down,relay.mapping.incline_up,relay.mapping.incline_down,relay.mapping.pulse_ms);
+    if(tail<0 || (size_t)tail>=sizeof(body)-(size_t)length+1)return ESP_FAIL;
+    length+=tail-1;
     headers(req);
     httpd_resp_set_type(req, "application/json");
-    return httpd_resp_send(req, body, length);
+    esp_err_t sent=httpd_resp_send(req, body, length);
+    // ESP-IDF reports this high-water mark in bytes. Log after the send so the
+    // first sample includes both JSON formatting and the network response path.
+    static bool stack_reported;
+    if(!stack_reported){
+        ESP_LOGI(TAG,"HTTP response minimum stack headroom: %u bytes",
+            (unsigned)uxTaskGetStackHighWaterMark(NULL));
+        stack_reported=true;
+    }
+    return sent;
 }
+
+static esp_err_t status_get(httpd_req_t *req){return send_status(req,NULL);}
 
 // Custom header requires a same-origin browser request: no CORS/preflight route
 // is provided. WPA2 access remains the authentication boundary for bench tests.
@@ -119,28 +111,26 @@ static esp_err_t rejected(httpd_req_t *req, const char *status, const char *mess
     httpd_resp_set_status(req, status);
     return httpd_resp_sendstr(req, message);
 }
-static esp_err_t claim_post(httpd_req_t *req)
+static esp_err_t connect_post(httpd_req_t *req)
 {
     if (!command_header(req) || req->content_len != 0)
         return rejected(req, "400 Bad Request", "Invalid test request");
     uint64_t token;
     esp_fill_random(&token, sizeof(token));
     if (!token) return rejected(req, "503 Service Unavailable", "Retry claim");
-    portENTER_CRITICAL(&status_lock);
-    bool accepted = test_session_claim(&session, esp_timer_get_time(), token);
-    portEXIT_CRITICAL(&status_lock);
-    if (!accepted) return rejected(req, "409 Conflict", "Test disabled or another page owns control");
-    char body[40];
-    snprintf(body, sizeof(body), "{\"token\":\"%016" PRIx64 "\"}", token);
-    headers(req);
-    httpd_resp_set_type(req, "application/json");
-    return httpd_resp_sendstr(req, body);
+    service_command_t command={.protocol_version=1,.action=strstr(req->uri,"claim")?SERVICE_CLAIM:SERVICE_REGISTER,.client={SERVICE_HTTP,1},.token=token};
+    service_result_t result=controller_runtime_submit_result(&command);
+    if(!result.accepted){httpd_resp_set_status(req,"409 Conflict");return send_status(req,&result);}
+    char body[160];
+    snprintf(body,sizeof(body),"{\"protocol_version\":1,\"token\":\"%016" PRIx64 "\",\"client_id\":%u,\"control_epoch\":%u}",token,(unsigned)result.client_id,(unsigned)result.epoch);
+    headers(req);httpd_resp_set_type(req,"application/json");return httpd_resp_sendstr(req,body);
 }
+
 static esp_err_t command_post(httpd_req_t *req)
 {
-    if (!command_header(req) || req->content_len <= 0 || req->content_len >= 128)
+    if (!command_header(req) || req->content_len <= 0 || req->content_len >= 160)
         return rejected(req, "400 Bad Request", "Invalid command length or header");
-    char body[128];
+    char body[160];
     int received = 0;
     while (received < req->content_len) {
         int count = httpd_req_recv(req, body + received, req->content_len - received);
@@ -148,48 +138,18 @@ static esp_err_t command_post(httpd_req_t *req)
         received += count;
     }
     body[received] = 0;
-    char token_text[17], sequence_text[11];
-    char action[32];
-    float speed, grade;
-    int end = 0;
-    if (sscanf(body, "%16[0-9a-f] %10[0-9] %31s %f %f %n",
-               token_text, sequence_text, action, &speed, &grade, &end) != 5 ||
-        end != received || strlen(token_text) != 16 || !isfinite(speed) || !isfinite(grade))
-        return rejected(req, "400 Bad Request", "Malformed test command");
-    uint64_t token = strtoull(token_text, NULL, 16);
-    unsigned long long sequence_value = strtoull(sequence_text, NULL, 10);
-    if (!sequence_value || sequence_value > UINT32_MAX)
-        return rejected(req, "400 Bad Request", "Invalid sequence");
-    uint32_t sequence = (uint32_t)sequence_value;
-    test_action_t operation;
-    if (!strcmp(action, "start")) operation = TEST_START;
-    else if (!strcmp(action, "stop")) operation = TEST_STOP;
-    else if (!strcmp(action, "targets")) operation = TEST_TARGETS;
-    else if (!strcmp(action, "heartbeat")) operation = TEST_HEARTBEAT;
-    else if (!strcmp(action, "reset")) operation = TEST_RESET;
-    else if (!strncmp(action, "w:", 2)) operation = TEST_WORKOUT;
-    else return rejected(req, "400 Bad Request", "Unknown action");
-    portENTER_CRITICAL(&status_lock);
-    bool accepted = operation == TEST_WORKOUT ?
-        test_session_start_workout(&session, esp_timer_get_time(), token, sequence, action + 2, speed, grade) :
-        test_session_command(&session, esp_timer_get_time(), token, sequence, operation, speed, grade);
-    portEXIT_CRITICAL(&status_lock);
-    if (!accepted) return rejected(req, "409 Conflict", "Command rejected: check session, state, and test limits");
-    return status_get(req);
+    service_command_t command={.client={SERVICE_HTTP,1}};
+    if(!control_service_parse(body,(size_t)received,&command))
+        return rejected(req,"400 Bad Request","Malformed v1 command");
+    service_result_t result=controller_runtime_submit_result(&command);
+    if(!result.accepted)httpd_resp_set_status(req,"409 Conflict");
+    return send_status(req,&result);
 }
 
 esp_err_t web_console_start(void)
 {
-    portENTER_CRITICAL(&status_lock);
 #ifdef CONFIG_NORDIC_SOFTWARE_TEST
-    test_session_init(&session, true);
-#else
-    test_session_init(&session, false);
-#endif
-    session_initialized = true;
-    portEXIT_CRITICAL(&status_lock);
-#ifdef CONFIG_NORDIC_SOFTWARE_TEST
-    ESP_LOGW(TAG, "SOFTWARE TEST ENABLED: no physical outputs; 3 second command timeout");
+    ESP_LOGW(TAG, "CONTROL TEST ENABLED: injected motion feedback; 3 second command timeout");
 #endif
     const char *ssid = CONFIG_NORDIC_AP_SSID;
     const char *password = CONFIG_NORDIC_AP_PASSWORD;
@@ -223,7 +183,8 @@ esp_err_t web_console_start(void)
     ESP_RETURN_ON_ERROR(esp_wifi_start(), TAG, "AP start failed");
 
     httpd_config_t server_config = HTTPD_DEFAULT_CONFIG();
-    server_config.max_uri_handlers = 7;
+    server_config.stack_size = 6144;
+    server_config.max_uri_handlers = 8;
     server_config.lru_purge_enable = true;
     server_config.recv_wait_timeout = 3;
     server_config.send_wait_timeout = 3;
@@ -233,7 +194,8 @@ esp_err_t web_console_start(void)
         const httpd_uri_t index = { .uri = "/", .method = HTTP_GET, .handler = index_get };
         const httpd_uri_t workouts = { .uri = "/api/workouts", .method = HTTP_GET, .handler = workouts_get };
         const httpd_uri_t status = { .uri = "/api/status", .method = HTTP_GET, .handler = status_get };
-        const httpd_uri_t claim = { .uri = "/api/test/claim", .method = HTTP_POST, .handler = claim_post };
+        const httpd_uri_t claim = { .uri = "/api/test/claim", .method = HTTP_POST, .handler = connect_post };
+        const httpd_uri_t connect = { .uri = "/api/session", .method = HTTP_POST, .handler = connect_post };
         const httpd_uri_t command = { .uri = "/api/test/command", .method = HTTP_POST, .handler = command_post };
         const httpd_uri_t logo = { .uri = "/assets/logo.svg", .method = HTTP_GET, .handler = logo_get };
         const httpd_uri_t hero = { .uri = "/assets/hero.jpg", .method = HTTP_GET, .handler = hero_get };
@@ -241,6 +203,7 @@ esp_err_t web_console_start(void)
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &workouts);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &status);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &claim);
+        if (result == ESP_OK) result = httpd_register_uri_handler(server, &connect);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &command);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &logo);
         if (result == ESP_OK) result = httpd_register_uri_handler(server, &hero);

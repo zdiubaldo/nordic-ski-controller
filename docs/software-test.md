@@ -1,5 +1,7 @@
 # Software-only tablet control test
 
+**Unloaded relay option:** `CONFIG_NORDIC_RELAY_CONTROL` additionally sends accepted session requests to configurable physical relay outputs. The motion feedback described below remains a test fixture. See [relay mapping](relay-driver.md#existing-controls-on-the-unloaded-board) for behavior and limitations.
+
 Enable `CONFIG_NORDIC_SOFTWARE_TEST` in a local build to exercise controller logic without any physical outputs. It defaults off. The Hosyond bench build enables it; the default Waveshare build does not. The real application controller remains unconfigured. A separate test session uses the same C control component with artificial limits of 0–5 m/s and 0–10% grade and a three-second timeout. None of these values configure a machine.
 
 ## Tablet workflow

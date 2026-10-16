@@ -49,7 +49,7 @@ Expect twelve tests and zero failures. This replaces the application image; refl
 
 ## Relay driver
 
-The TCA9554 driver and ESP-IDF I2C adapter are built but not connected to the application. See [driver behavior and integration limits](../docs/relay-driver.md). Desktop relay tests compile the real driver with register-access test callbacks:
+The TCA9554 driver and ESP-IDF I2C adapter are connected only when the unloaded `CONFIG_NORDIC_RELAY_CONTROL` option is enabled. See [driver behavior and integration limits](../docs/relay-driver.md). Desktop relay tests compile the real driver with register-access test callbacks:
 
 ```sh
 cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -g \
@@ -75,3 +75,9 @@ Enable **Nordic Wi-Fi status page → Enable software-only control test** for th
 ## Editing workouts
 
 See [workout definitions](workouts/README.md). Run `node tools/generate-workouts.cjs` from the repository root after adding, editing, or removing JSON files. Commit the generated header and manifest with the definitions. Firmware builds reject stale definitions; no Node runtime is needed on the ESP32 or inside the ESP-IDF build container.
+
+## Generic hardware layer
+
+The `motion` component provides configurable limits, rate-limited targets, explicit feedback, and driver fault/stop handling. `motion_memory` records commands and accepts injected feedback without I/O. See [the hardware contract](../docs/generic-hardware.md). The webpage now connects through the [shared control service](../docs/control-service.md) to the memory driver only. Physical outputs remain disabled.
+
+For existing web controls on unloaded relays, see [relay mapping and configuration](../docs/relay-driver.md#existing-controls-on-the-unloaded-board). The editable initial profile is `relay-bench.defaults`; change an existing build through menuconfig.

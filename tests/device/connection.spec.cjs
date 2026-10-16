@@ -21,10 +21,14 @@ test('second browser cannot take over and updates its manual display',async({ope
     const other=await otherContext.newPage();await other.goto(page.url());
     await expect(other.locator('#claim')).toHaveText('In use on another screen');
     await expect(other.locator('#claim')).toBeDisabled();
-    await expect(other.locator('#runToggle')).toBeDisabled();
+    await expect(other.locator('#runToggle')).toBeEnabled();
+    await expect(other.locator('#speedUp')).toBeDisabled();
     await page.locator('#speedUp').click();
     await expect(other.locator('#acceptedSpeed')).toHaveText('0.5');
     await expect(other.locator('#speed')).toHaveValue('0.50');
+    await other.locator('#runToggle').click();
+    await expect(page.locator('#mode')).toHaveText('idle');
+    await expect(page.locator('#claim')).toHaveText('Controls enabled');
   }finally{await otherContext.close();}
 });
 test('delayed status cannot overwrite a newer stop response',async({operator:page})=>{

@@ -21,7 +21,8 @@ typedef struct {
     float intensity;
     bool workout_active, workout_complete, overridden;
 } test_session_t;
-// Software-only fixture. Callers serialize all access; no hardware adapter exists.
+// Lease/workout engine used by control_service. Callers serialize all access.
+// Do not bypass the service from a transport or physical hardware integration.
 void test_session_init(test_session_t *s, bool enabled);
 void test_session_tick(test_session_t *s, int64_t now);
 bool test_session_claim(test_session_t *s, int64_t now, uint64_t token);
