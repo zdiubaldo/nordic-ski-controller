@@ -37,7 +37,8 @@ int main(int argc,char **argv)
         if (!strcmp(line, "workouts\n")) { puts(test_session_workout_catalog()); continue; }
         control_service_memory_sample(&memory,now);
         bool accepted = false;
-        service_command_t command={.protocol_version=1,.client={SERVICE_HTTP,1}};
+        service_command_t command={.protocol_version=1,.client={
+            argc>1 && !strcmp(argv[1],"--ble") ? SERVICE_BLE : SERVICE_HTTP,1}};
         uint64_t token;
         if (!strcmp(line, "status\n")) accepted = true;
         else if (sscanf(line, "register %16" SCNx64, &token) == 1)

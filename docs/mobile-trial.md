@@ -120,3 +120,9 @@ Physical Android BLE acceptance is still required after installing the APK.
 
 Local build logs are retained in ignored `.local/android-build-verified.log` and
 `.local/mobile-ios-export.log`. Future builds may produce a different APK hash.
+
+### Laptop emulator
+
+See [Android emulator and virtual BLE](android-emulator.md) for the free local
+API 36 emulator, separate x86_64 APK, and Bumble virtual peripheral backed by
+the shared C memory controller. The physical phone acceptance steps still apply.

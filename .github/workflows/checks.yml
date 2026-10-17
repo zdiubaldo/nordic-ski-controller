@@ -79,3 +79,5 @@ jobs:
       - run: pnpm test:client
       - run: pnpm --filter @nordic/mobile test
       - run: pnpm check:mobile
+      - run: bash tools/emulator/build-controller.sh
+      - run: python3 tools/emulator/test_backend.py

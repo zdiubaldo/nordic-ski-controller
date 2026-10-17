@@ -39,7 +39,7 @@ export class BleTransport implements Transport {
     // iOS connect can wait indefinitely; cancel the native operation on timeout.
     let timer: ReturnType<typeof setTimeout>;
     const expired = new Promise<never>((_resolve, reject) => {
-      timer = setTimeout(() => { reject(new Error('Connection or pairing timed out')); void this.close(); }, 30000);
+      timer = setTimeout(() => { reject(new Error('Connection or pairing timed out')); void this.close(); }, 120000);
     });
     try {
       await Promise.race([expired, (async () => {
@@ -85,7 +85,7 @@ export class BleTransport implements Transport {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id); reject(new Error('Response timed out; outcome unknown. Reconnect and check status.'));
-      }, body === 'connect' ? 60000 : 10000);
+      }, body === 'connect' ? 120000 : 10000);
       this.pending.set(id, {resolve, reject, timer});
       const write = async () => {
         if (this.closed) throw new Error('Bluetooth disconnected');
