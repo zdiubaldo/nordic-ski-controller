@@ -19,3 +19,14 @@ sdkconfig.old
 
 .local/
 node_modules/
+
+# Mobile trial generated files and signing credentials
+.expo/
+mobile/android/
+mobile/ios/
+*.apk
+*.aab
+*.ipa
+*.jks
+*.keystore
+credentials.json

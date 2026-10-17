@@ -1,0 +1,26 @@
+{
+  "name": "@nordic/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "typecheck": "tsc --noEmit",
+    "export:android": "expo export --platform android",
+    "export:ios": "expo export --platform ios",
+    "test": "node tests/ble.test.cjs"
+  },
+  "dependencies": {
+    "@nordic/controller-client": "workspace:*",
+    "expo": "57.0.30",
+    "expo-dev-client": "~57.0.20",
+    "expo-keep-awake": "~57.0.2",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-ble-manager": "12.5.3"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.0",
+    "typescript": "~6.0.3"
+  }
+}

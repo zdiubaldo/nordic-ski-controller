@@ -1,0 +1,10 @@
+{
+  "name": "@nordic/controller-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "test": "node tests/client.test.ts"
+  }
+}

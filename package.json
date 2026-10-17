@@ -3,9 +3,13 @@
   "private": true,
   "scripts": {
     "test:device": "playwright test",
-    "test:device:report": "playwright show-report .local/device-report"
+    "test:device:report": "playwright show-report .local/device-report",
+    "test:client": "node packages/controller-client/tests/client.test.ts",
+    "check:mobile": "pnpm --filter @nordic/mobile typecheck",
+    "build:android:local": "bash tools/build-android-local.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0"
-  }
+  },
+  "packageManager": "pnpm@11.19.0"
 }

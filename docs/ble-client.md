@@ -2,7 +2,7 @@
 
 The opt-in ESP-IDF 6.1 NimBLE adapter connects two BLE clients to the existing
 shared controller runtime. Wi-Fi HTTP, BLE and USB remain enabled in parallel.
-No mobile app is included. The webpage and shared control policy are unchanged:
+An [Android-first mobile connection prototype](mobile-trial.md) is available on the trial branch; physical phone validation is pending. The webpage and shared control policy are unchanged:
 one owner controls settings/workouts; any registered authorized client may Stop.
 A BLE bond authorizes a connection, not ownership or motion.
 

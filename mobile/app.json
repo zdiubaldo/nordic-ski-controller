@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Nordic Ski Trial",
+    "slug": "nordic-ski-trial",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {"bundleIdentifier": "com.zdiubaldo.nordicski.trial", "supportsTablet": true},
+    "android": {"package": "com.zdiubaldo.nordicski.trial"},
+    "plugins": [["react-native-ble-manager", {"neverForLocation": true, "isBleRequired": true, "bluetoothAlwaysPermission": "Connect to your Nordic Ski controller to view status and control your workout."}]]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "cli": {"version": ">= 25.1.1", "appVersionSource": "local"},
+  "build": {
+    "development": {"developmentClient": true, "distribution": "internal", "android": {"buildType": "apk"}},
+    "preview": {"distribution": "internal", "android": {"buildType": "apk"}}
+  }
+}
