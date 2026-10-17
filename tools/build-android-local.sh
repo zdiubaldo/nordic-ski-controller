@@ -18,6 +18,7 @@ export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$PATH"
 [[ -x "$JAVA_HOME/bin/javac" && -d "$ANDROID_HOME/platforms/android-36" ]] || {
   echo 'Install a JDK and Android SDK first; see docs/mobile-trial.md.' >&2; exit 1;
 }
+node mobile/scripts/bundle-web.cjs
 (cd mobile && node node_modules/expo/bin/cli prebuild --platform android --no-install)
 mkdir -p .local/android-signing .local/artifacts
 chmod 700 .local/android-signing

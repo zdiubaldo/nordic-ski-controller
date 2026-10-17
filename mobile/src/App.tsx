@@ -1,31 +1,42 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {AppState, Button, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {AppState, Button, ScrollView, StyleSheet, Text, View, StatusBar} from 'react-native';
+import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
+import {WebView} from 'react-native-webview';
+import {controllerPage} from './generated/controller-page';
+import {WebBridge, type WebRequest} from './web-bridge';
 import BleManager, {type Peripheral} from 'react-native-ble-manager';
 import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
 import {ControllerClient, type Snapshot} from '@nordic/controller-client';
 import {BleTransport, scan} from './ble';
 
+const pageSource = {html: controllerPage, baseUrl: 'https://nordic.invalid/'};
+
 export default function App() {
   const [devices, setDevices] = useState<Peripheral[]>([]);
   const [state, setState] = useState<Snapshot>();
-  const [catalog, setCatalog] = useState<unknown>();
   const [message, setMessage] = useState('Scan for your controller to begin.');
   const [busy, setBusy] = useState(false);
   const [connected, setConnected] = useState(false);
   const client = useRef<ControllerClient | undefined>(undefined);
   const transport = useRef<BleTransport | undefined>(undefined);
   const discovery = useRef<{remove(): void} | undefined>(undefined);
-  const heartbeatBusy = useRef(false);
+  const web = useRef<WebView>(null);
+  const bridge = useRef<WebBridge | undefined>(undefined);
   const foreground = useRef(true);
   const statusAt = useRef(0);
+  const pageActive = useRef(false);
+  const bootstrapBusy = useRef(false);
 
   async function disconnect() {
     const c = client.current, t = transport.current;
+    // Detach immediately: no new page work can enter a closing session.
+    client.current = undefined; transport.current = undefined; bridge.current = undefined; pageActive.current = false;
+    setConnected(false); setState(undefined);
+    setMessage('Disconnected. Select your controller to reconnect.');
     if (c && !c.closed && c.ownsControl) {
-      try { await c.command('stop'); await c.command('release'); } catch { /* Link close retains the ESP watchdog fallback. */ }
+      try { await c.command('stop'); await c.command('release'); } catch { /* ESP watchdog remains the fallback. */ }
     }
-    c?.invalidate(); client.current = undefined; transport.current = undefined;
-    setConnected(false); setState(undefined); setCatalog(undefined);
+    c?.invalidate();
     await t?.close();
   }
   async function run(work: () => Promise<void>) {
@@ -39,16 +50,18 @@ export default function App() {
   useEffect(() => {
     const timer = setInterval(() => {
       const c = client.current;
-      if (!foreground.current || !c?.token || c.closed || heartbeatBusy.current) return;
+      if (!foreground.current || !c?.token || c.closed) return;
       if (Date.now() - statusAt.current > 8000) {
-        c.invalidate(); void transport.current?.close(); setMessage('Status stream lost. Reconnect to refresh.'); return;
+        c.invalidate(); void transport.current?.close(); setMessage('Connection lost. Connect again to check the controller.');
       }
-      heartbeatBusy.current = true;
-      void c.command('heartbeat').catch(async () => {
-        if (client.current !== c) return;
-        setMessage('Heartbeat failed. Reconnect and check controller status.');
-        c.invalidate(); await transport.current?.close();
-      }).finally(() => { heartbeatBusy.current = false; });
+      // Keep only the viewer registration alive while the WebView starts.
+      // After its session handshake, the page must sustain its own heartbeats.
+      if (!pageActive.current && !c.ownsControl && !bootstrapBusy.current) {
+        bootstrapBusy.current = true;
+        void c.command('heartbeat').catch(async () => {
+          if (client.current === c) { c.invalidate(); await transport.current?.close(); }
+        }).finally(() => { bootstrapBusy.current = false; });
+      }
     }, 500);
     const subscription = AppState.addEventListener('change', next => {
       foreground.current = next === 'active';
@@ -80,7 +93,8 @@ export default function App() {
     statusAt.current = Date.now();
     c.onState = value => {if (client.current === c) {statusAt.current = Date.now(); setState(value);}};
     t.onState = value => c.accept(value);
-    t.onCatalog = value => {if (transport.current === t) setCatalog(value);};
+    let receivedCatalog: unknown;
+    t.onCatalog = value => {if (transport.current === t) {receivedCatalog=value;}};
     t.onDisconnect = reason => { c.invalidate(); if (transport.current === t) {setConnected(false); setState(undefined); setMessage(reason);} };
     try {
       await t.open();
@@ -92,48 +106,66 @@ export default function App() {
       if (!status.ok) throw new Error(status.reason || 'Status unavailable');
       const workouts = await t.request('workouts');
       if (!workouts.ok) throw new Error(workouts.reason || 'Catalog unavailable');
-      setConnected(true); setMessage('Connected as a viewer. Claim control only when ready.');
+      const deadline = Date.now()+10000;
+      while (!receivedCatalog || !c.state) {
+        if (c.closed || Date.now()>deadline) throw new Error('Controller status unavailable. Connect again.');
+        await new Promise(resolve=>setTimeout(resolve,30));
+      }
+      bridge.current = new WebBridge(c, receivedCatalog);
+      setConnected(true); setMessage('Connected');
     } catch (error) { await t.close(); throw error; }
   }
-  async function action(name: string) {
-    await client.current!.command(name);
-    setMessage(name === 'claim' ? 'Controls enabled. This prototype does not start motion.' : name === 'stop' ? 'Stop accepted.' : 'Control released.');
+  async function pageMessage(data: string) {
+    const active = bridge.current;
+    if (!active || !foreground.current) return;
+    let request: WebRequest;
+    try {
+      const message = JSON.parse(data);
+      if (message.type === 'cancel') { await disconnect(); setMessage('Request timed out. Connect again to check the controller.'); return; }
+      request = message;
+      const reply = await active.handle(request);
+      if (bridge.current === active && request.path === '/api/session') pageActive.current = true;
+      if (bridge.current === active) web.current?.injectJavaScript(`window.__nordicReply(${JSON.stringify(reply).replace(/</g,'\\u003c')});true;`);
+    } catch (error) {
+      if (bridge.current !== active) return;
+      await disconnect();
+      setMessage(error instanceof Error ? error.message : 'Connection lost. Connect again.');
+    }
   }
-  const owns = connected && client.current?.ownsControl;
-  return <ScrollView contentContainerStyle={styles.page}>
-    <Text style={styles.title}>Nordic Ski Trial</Text>
-    <Text style={styles.subtitle}>Bluetooth connection prototype</Text>
-    <Text accessibilityLiveRegion="polite" style={styles.message}>{message}</Text>
-    <Text>First pairing needs the temporary code from the controller’s USB pairing window. Existing bonds reconnect without another code.</Text>
-    <View style={styles.row}><Button title="Scan for controllers" disabled={busy || connected} onPress={() => void run(find)}/></View>
-    {!connected && devices.map(device => <View style={styles.card} key={device.id}>
-      <Text>{device.name || 'Nordic Ski'} · {device.id}</Text>
-      <Button title="Connect and pair" disabled={busy} onPress={() => void run(() => connect(device))}/>
-    </View>)}
-    {connected && <>
-      <View style={styles.card}>
-        <Text style={styles.heading}>Controller status</Text>
-        <Text>Mode: {state?.mode ?? 'Waiting for status'}</Text>
-        <Text>Fault: {state?.fault ?? '—'}</Text>
-        <Text>Control: {owns ? 'This phone' : state?.owner_client_id ? 'Another client' : 'Available'}</Text>
-        <Text>Requested speed: {state?.requested_speed_mps ?? '—'} m/s</Text>
-        <Text>Requested incline: {state?.requested_grade_percent ?? '—'}%</Text>
-        <Text>These are requested settings; motion is not measured.</Text>
-      </View>
-      <View style={styles.row}><Button title="Enable controls" disabled={busy || !state || !!state.owner_client_id} onPress={() => void run(() => action('claim'))}/></View>
-      <View style={styles.row}><Button title="STOP" color="#b42318" onPress={() => void run(() => action('stop'))}/></View>
-      <View style={styles.row}><Button title="Release controls" disabled={busy || !owns} onPress={() => void run(() => action('release'))}/></View>
-      <View style={styles.row}><Button title="Disconnect" disabled={busy} onPress={() => void run(disconnect)}/></View>
-      <Text style={styles.heading}>Workout catalog</Text>
-      <Text selectable>{catalog ? JSON.stringify(catalog, null, 2) : 'Loading catalog…'}</Text>
-    </>}
-    <Text style={styles.footer}>Connection milestone: scan, pair, status, catalog, ownership, and Stop. Start and workout controls come after phone validation. Leaving the app closes this session; reconnecting never starts it.</Text>
-  </ScrollView>;
+  return <SafeAreaProvider><SafeAreaView style={styles.screen}>
+    <StatusBar barStyle="light-content" backgroundColor="#0c1824"/>
+    {connected ? <>
+      <View style={styles.connectionBar}><Text style={styles.connected}>Bluetooth connected</Text><Button title="Disconnect" color="#16ade5" onPress={() => void run(disconnect)}/></View>
+      <WebView ref={web} style={styles.web} source={pageSource}
+        originWhitelist={['https://nordic.invalid','about:blank']}
+        onShouldStartLoadWithRequest={request => request.url==='about:blank'||request.url==='https://nordic.invalid/'}
+        onMessage={event => void pageMessage(event.nativeEvent.data)}
+        javaScriptEnabled domStorageEnabled={false} allowFileAccess={false} allowUniversalAccessFromFileURLs={false}
+        mixedContentMode="never" setSupportMultipleWindows={false}
+        onError={() => void disconnect()} onRenderProcessGone={() => void disconnect()}
+        onContentProcessDidTerminate={() => void disconnect()}/>
+    </> : <ScrollView contentContainerStyle={styles.page}>
+      <Text style={styles.eyebrow}>TEAM SUMMIT NORDIC</Text>
+      <Text style={styles.title}>Connect your controller</Text>
+      <Text style={styles.subtitle}>Your pace. Your climb.</Text>
+      <Text accessibilityLiveRegion="polite" style={styles.message}>{message}</Text>
+      <View style={styles.row}><Button title="Scan for controllers" color="#16ade5" disabled={busy} onPress={() => void run(find)}/></View>
+      {devices.map(device => <View style={styles.card} key={device.id}>
+        <Text style={styles.device}>{device.name || 'Nordic Ski'}</Text>
+        <Button title="Connect and pair" color="#16ade5" disabled={busy} onPress={() => void run(() => connect(device))}/>
+      </View>)}
+      <Text style={styles.footer}>For first pairing, open the controller’s USB pairing window and enter its code when your phone asks. Previously paired controllers reconnect without a code.</Text>
+    </ScrollView>}
+  </SafeAreaView></SafeAreaProvider>;
 }
 const styles = StyleSheet.create({
-  page: {padding: 24, paddingTop: 60, paddingBottom: 48, backgroundColor: '#f5f7fa', flexGrow: 1},
-  title: {fontSize: 30, fontWeight: '700', color: '#143548'}, subtitle: {fontSize: 18, marginBottom: 16},
-  heading: {fontSize: 20, fontWeight: '600', marginBottom: 8}, message: {padding: 16, backgroundColor: '#e0edf4', marginBottom: 16},
-  row: {marginVertical: 8}, card: {padding: 16, borderRadius: 12, backgroundColor: 'white', marginVertical: 12, gap: 8},
-  footer: {marginTop: 24, color: '#475467', lineHeight: 22},
+  screen: {flex:1,backgroundColor:'#0c1824'}, web:{flex:1,backgroundColor:'#0c1824'},
+  connectionBar:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingHorizontal:16,borderBottomWidth:1,borderBottomColor:'#2c4052'},
+  connected:{color:'#9eb2c4',fontSize:12},
+  page: {padding:24,paddingTop:40,backgroundColor:'#0c1824',flexGrow:1},
+  eyebrow:{color:'#16ade5',fontSize:12,fontWeight:'700',letterSpacing:2,marginBottom:16},
+  title:{fontSize:30,fontWeight:'700',color:'#f5f8fb'}, subtitle:{fontSize:18,color:'#9eb2c4',marginTop:8,marginBottom:24},
+  message:{padding:16,backgroundColor:'#142536',borderRadius:12,color:'#d9eaf5',marginBottom:16},
+  row:{marginVertical:8},card:{padding:16,borderRadius:12,backgroundColor:'#142536',marginVertical:12,gap:16},
+  device:{color:'#f5f8fb',fontSize:18},footer:{marginTop:24,color:'#9eb2c4',lineHeight:22},
 });

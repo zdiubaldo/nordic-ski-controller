@@ -25,6 +25,7 @@ def labels():
 
 def tap(label):
     nodes = [n for n in snapshot().iter('node') if label.casefold() in [(n.get('text') or '').casefold(), (n.get('content-desc') or '').casefold()] and n.get('enabled') == 'true']
+    nodes = [n for n in nodes if (lambda b: b[2]>b[0] and b[3]>b[1])(list(map(int,re.findall(r'\d+',n.get('bounds')))))]
     if not nodes:
         raise RuntimeError('Enabled UI label not found: ' + label)
     nodes.sort(key=lambda n: n.get('clickable') != 'true')

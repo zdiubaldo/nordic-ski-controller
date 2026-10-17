@@ -16,8 +16,8 @@ flowchart LR
 
 This tests Android permissions, pairing, BLE framing, status/catalog delivery,
 ownership, Stop, and app lifecycle. It does not establish physical radio
-reliability, ESP timing, relay behavior, or iOS behavior. The app remains the
-connection milestone: it has no Start or workout execution controls yet.
+reliability, ESP timing, relay behavior, or iOS behavior. The app now embeds the shared website, including Start, settings, presets, and
+Stop. These operate only the memory controller when connected to the simulator.
 
 ## Local setup
 
@@ -75,7 +75,8 @@ Bluetooth settings before pairing again.
 
 ## Exercise the controls
 
-Use Enable controls, Release controls, and Stop in the app. The simulator's
+Use the website’s Enable controls, Start/Stop, speed, incline, and preset controls
+in the app. The native Disconnect button releases ownership. The simulator's
 local socket can inspect state or act as a second logical client:
 
 ```sh
@@ -107,7 +108,7 @@ Physical Android/ESP testing and iPhone validation remain separate acceptance
 steps. The existing ARM phone APK is separate from the emulator artifact; rebuild
 the default phone target to include subsequent source fixes.
 
-## Recorded validation (2026-10-16)
+## Initial native-screen validation (2026-10-16)
 
 - Android Emulator 37.2.12, API 36 x86_64, host GPU with Vulkan disabled.
 - Native release build and APK signature verification passed. Emulator APK SHA-256:
@@ -127,3 +128,23 @@ the default phone target to include subsequent source fixes.
 The tests exposed and fixed a short app pairing deadline and two simulator
 issues: subscribing mid-fragment and using Netsim's transient public address as
 a bond namespace. None of these tests flashed or operated the physical ESP.
+
+## Shared webpage validation (2026-10-16)
+
+The final shared-interface APK passed the updated `smoke.py` sequence:
+
+- Enable controls, manual Start, speed and incline changes, Stop clearing targets.
+- Steady preset Start and Stop through the original website controls.
+- Background Stop/release/disconnect and bonded reconnect without automatic control.
+- Another client owning control, disabled claim, and observer Stop.
+- Forced link loss clearing ownership and returning the app to its connection screen.
+
+The final APK includes a viewer-only keepalive during WebView startup and a
+15-second mobile request deadline around the native BLE operation. The original
+Wi-Fi deadline and controller watchdog are unchanged. The simulator was reset
+following the deliberate fault test, leaving the app as an idle viewer.
+
+Current APK details are in [the mobile trial guide](mobile-trial.md). Test output
+is `.local/emulator-tests/shared-page-smoke.log`; screenshots are `shared-web.png`
+and `shared-controls.png` in the same directory. The latter shows the original
+speed/incline controls, and the former shows the original artwork and layout.

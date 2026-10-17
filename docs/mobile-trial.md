@@ -1,8 +1,7 @@
 # Android mobile trial
 
-This experiment lives on `codex/android-mobile-trial`. The first milestone adds a
-React Native / Expo BLE connection prototype for Android, with iOS-compatible
-source. It does not replace the installed ESP firmware or change the webpage.
+This experiment lives on `codex/android-mobile-trial`. The app uses React Native / Expo for native BLE and a WebView for the shared
+website interface, with iOS-compatible source. It does not replace the installed ESP firmware or change the webpage.
 The user selected local Android builds; an Expo account is unnecessary.
 
 ## What is implemented
@@ -13,19 +12,38 @@ The user selected local Android builds; an Expo account is unnecessary.
 - `mobile`: native BLE discovery by service UUID, Android OS bonding, registration,
   status/catalog subscriptions, claim/release, registered-observer Stop, heartbeat,
   explicit disconnect, and reconnect without automatic ownership or movement.
-- An initial native screen for validating those functions. Start, target editing,
-  workout selection, and the finished UI are later milestones.
+- The existing website runs inside a native WebView: the same HTML, CSS, artwork,
+  manual controls, unit selection, workouts, and terrain chart. Only the footer’s
+  transport label changes to Bluetooth. A separate native screen handles pairing.
 
-The HTTP adapter is prepared and tested, but the existing webpage has **not yet
-been migrated** onto the package. Its HTML/CSS/JavaScript and ESP embedding remain
-unchanged. Migration needs to preserve its existing controls and browser tests.
-The shared package contains no React Native imports, so it can serve both clients.
+`mobile/scripts/bundle-web.cjs` reads the ESP webpage and embeds its images as
+local data URLs. It generates an ignored TypeScript module before builds and
+exports. There is no second maintained copy of the interface. The website files
+and Wi-Fi firmware are unchanged.
+
+Inside the app, `web-fetch.js` forwards only the four existing API routes to
+`WebBridge`. The bridge validates the session, sequence, command, and epoch, uses
+the shared TypeScript client over native BLE, and returns the confirmed status in
+the shape the website already expects. It waits for the status revision after a
+command, so a GATT write alone cannot be displayed as a successful state change.
+The app allows 15 seconds for the native BLE request path (the website’s Wi-Fi
+path keeps its two-second deadline). Native results still time out after ten
+seconds; the ESP contact watchdog is unchanged. A native keepalive preserves
+only the viewer registration while the WebView
+loads. After the page session handshake, the page sends heartbeats; an
+unresponsive page cannot keep a workout alive.
+Timeouts and backgrounding close the native session. Remote navigation, network
+requests, and file access are disabled for the embedded page.
 
 ```mermaid
 flowchart LR
-  Web[Existing webpage] --> HTTP[HTTP adapter on ESP]
-  App[React Native app] --> Shared[Shared TypeScript client]
-  Shared --> BLE[Native BLE adapter]
+  Source[Shared website HTML / CSS / images] --> Browser[Wi-Fi browser]
+  Source --> Bundle[Local app bundle]
+  Bundle --> View[React Native WebView]
+  Browser --> HTTP[HTTP adapter on ESP]
+  View --> Bridge[Validated native bridge]
+  Bridge --> Shared[Shared TypeScript client]
+  Shared --> BLE[Native Bluetooth]
   BLE --> ESPBLE[BLE adapter on ESP]
   USB[USB diagnostics] --> Service[Shared ESP command service]
   HTTP --> Service
@@ -75,11 +93,11 @@ Expo Go cannot load this native Bluetooth module.
    the app. Android 11 and earlier also require location permission for scanning.
 4. Verify mode, requested speed/incline, and the six-workout catalog. Connect the
    webpage on another device and verify concurrent status updates.
-5. Claim/release while idle. With the webpage owning control, app claim must be
-   rejected, but app Stop must work. Test actual motion only on the established
-   unloaded bench and through the already-approved web controls.
+5. Enable controls while idle, then test Start, speed, incline, Stop, and presets
+   on the established unloaded bench. Disconnect releases ownership. With the
+   webpage owning control, app claim must be disabled, but app Stop must work.
 6. Disconnect and reconnect: the OS bond should persist, ownership must not be
-   reclaimed automatically, and Start must never be sent by this prototype.
+   reclaimed automatically, and Start must never be sent without your action.
 7. Test permission denial, Bluetooth off, ESP restart, background/lock, and link
    loss. No old command may be replayed; explicitly reconnect and check state.
 
@@ -126,3 +144,24 @@ Local build logs are retained in ignored `.local/android-build-verified.log` and
 See [Android emulator and virtual BLE](android-emulator.md) for the free local
 API 36 emulator, separate x86_64 APK, and Bumble virtual peripheral backed by
 the shared C memory controller. The physical phone acceptance steps still apply.
+
+### Shared website interface validation
+
+The shared-interface release APK is 51.5 MiB and contains ARM64, ARMv7, and x86_64
+libraries for phones and this emulator. It was built and signed locally. Current
+SHA-256: `bb0dfae6fcaa9a30690f04103df48a6fbc45cc099d07081d1054211fd6c283e8`.
+Both `.local/artifacts/nordic-ski-trial.apk` and `nordic-ski-emulator.apk` currently
+contain this same universal build. Future default phone builds contain the two
+ARM architectures; the emulator build script produces x86_64 only.
+
+Seven bridge/bundling tests, five BLE adapter tests, nine shared-client tests,
+TypeScript checks, and the existing webpage/catalog regressions passed. The
+bundling test verifies that the shared styles, control script (apart from the
+mobile request deadline), logo, and hero image are present in the app.
+Physical phone/ESP and native iOS acceptance remain pending.
+
+The final Android emulator acceptance test passed manual Start/settings/Stop,
+preset Start/Stop, background cleanup, bonded reconnect without automatic control,
+observer Stop, and forced link loss. No physical ESP was flashed or operated.
+The final iOS JavaScript/Hermes export also passed; native iOS compilation and
+device testing remain unverified.

@@ -30,3 +30,6 @@ mobile/ios/
 *.jks
 *.keystore
 credentials.json
+
+# Built directly from the shared ESP webpage and artwork
+mobile/src/generated/
