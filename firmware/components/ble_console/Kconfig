@@ -6,4 +6,12 @@ menu "Nordic Bluetooth client"
         help
             Requires NimBLE, Secure Connections only, two connections and NVS
             bond persistence. Use ble.defaults together with local board defaults.
+    config NORDIC_BLE_NO_PIN_TEST
+        bool "Use PIN-free BLE pairing for bench testing"
+        depends on NORDIC_BLE && NORDIC_SOFTWARE_TEST
+        default n
+        help
+            Use encrypted, bonded Secure Connections Just Works pairing without
+            a PIN or USB enrollment window. Nearby devices can pair while this
+            test image is installed. Disable after unloaded bench testing.
 endmenu

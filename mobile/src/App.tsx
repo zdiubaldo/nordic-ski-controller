@@ -43,7 +43,9 @@ export default function App() {
     setBusy(true);
     try { await work(); }
     catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Bluetooth operation failed');
+      const reason = error instanceof Error ? error.message : String(error || 'Bluetooth operation failed');
+      console.warn(`[NordicBLE] connection operation failed: ${reason}`);
+      setMessage(reason);
       if (client.current?.closed) await transport.current?.close();
     } finally { setBusy(false); }
   }

@@ -25,6 +25,19 @@ existing bench controls. BLE does not enable outputs or bypass the runtime.
 
 ## Enrollment and removal
 
+### Temporary PIN-free bench mode
+
+`CONFIG_NORDIC_BLE_NO_PIN_TEST=y` selects Secure Connections Just Works pairing
+for unloaded bench testing. It requires `CONFIG_NORDIC_SOFTWARE_TEST=y` and is
+disabled by default. Android may show a Pair confirmation, but no PIN or USB
+pairing window is required. Encryption and bonding are still required; this mode
+does not authenticate the peer with a passkey, so nearby devices can enroll.
+Control ownership, Stop priority, and communication timeouts remain in effect.
+Rebuild with this option disabled to restore passkey authentication. PIN-free
+bonds may need to be forgotten on both ends before pairing with the normal image.
+
+### Normal PIN-protected enrollment
+
 While the controller is **idle**, send `ID ble-pair` over the existing USB console.
 The JSON reply contains a six-digit `passkey` string (including leading zeros) and
 `pairing_seconds:120`. Enter it on the connecting central. The code is temporary

@@ -7,6 +7,7 @@
 #include "esp_mac.h"
 #include "esp_random.h"
 #include "esp_timer.h"
+#include "esp_log.h"
 #include "nvs_flash.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
@@ -34,6 +35,13 @@
 #define STATUS_SIZE 3200
 #define INVALID_HANDLE 0xffff
 #define WINDOW_US 120000000
+#ifdef CONFIG_NORDIC_BLE_NO_PIN_TEST
+#define REQUIRE_MITM 0
+#define COMMAND_AUTH_FLAGS 0
+#else
+#define REQUIRE_MITM 1
+#define COMMAND_AUTH_FLAGS BLE_GATT_CHR_F_WRITE_AUTHEN
+#endif
 // UUID: 75e60000-6b92-4e3d-a347-8bc06c51d210; characteristic suffix 0001..0005.
 #define UUID(n) BLE_UUID128_INIT(0x10,0xd2,0x51,0x6c,0xc0,0x8b,0x47,0xa3,0x3d,0x4e,0x92,0x6b,n,0,0xe6,0x75)
 static const ble_uuid128_t service_uuid=UUID(0), info_uuid=UUID(1), command_uuid=UUID(2), result_uuid=UUID(3), status_uuid=UUID(4), catalog_uuid=UUID(5);
@@ -94,7 +102,7 @@ static int access_characteristic(uint16_t connection,uint16_t attribute,struct b
     }
     if(kind!=1||ctx->op!=BLE_GATT_ACCESS_OP_WRITE_CHR)return BLE_ATT_ERR_WRITE_NOT_PERMITTED;
     struct ble_gap_conn_desc desc;
-    if(ble_gap_conn_find(connection,&desc)||!desc.sec_state.encrypted||!desc.sec_state.authenticated||!desc.sec_state.bonded)
+    if(ble_gap_conn_find(connection,&desc)||!desc.sec_state.encrypted||(REQUIRE_MITM&&!desc.sec_state.authenticated)||!desc.sec_state.bonded)
         return BLE_ATT_ERR_INSUFFICIENT_AUTHEN;
     // Do not wait in the host callback, including when the worker is publishing.
     if(xSemaphoreTake(lock,0)!=pdTRUE)return BLE_ATT_ERR_INSUFFICIENT_RES;
@@ -124,7 +132,7 @@ static int access_characteristic(uint16_t connection,uint16_t attribute,struct b
 static const struct ble_gatt_svc_def services[]={
     {.type=BLE_GATT_SVC_TYPE_PRIMARY,.uuid=&service_uuid.u,.characteristics=(struct ble_gatt_chr_def[]){
         {.uuid=&info_uuid.u,.access_cb=access_characteristic,.arg=(void *)5,.flags=BLE_GATT_CHR_F_READ},
-        {.uuid=&command_uuid.u,.access_cb=access_characteristic,.arg=(void *)1,.flags=BLE_GATT_CHR_F_WRITE|BLE_GATT_CHR_F_WRITE_ENC|BLE_GATT_CHR_F_WRITE_AUTHEN},
+        {.uuid=&command_uuid.u,.access_cb=access_characteristic,.arg=(void *)1,.flags=BLE_GATT_CHR_F_WRITE|BLE_GATT_CHR_F_WRITE_ENC|COMMAND_AUTH_FLAGS},
         {.uuid=&result_uuid.u,.access_cb=access_characteristic,.flags=BLE_GATT_CHR_F_NOTIFY,.val_handle=&result_handle},
         {.uuid=&status_uuid.u,.access_cb=access_characteristic,.flags=BLE_GATT_CHR_F_NOTIFY,.val_handle=&status_handle},
         {.uuid=&catalog_uuid.u,.access_cb=access_characteristic,.flags=BLE_GATT_CHR_F_NOTIFY,.val_handle=&catalog_handle},
@@ -134,6 +142,7 @@ static int gap_event(struct ble_gap_event *event,void *arg)
     (void)arg;
     switch(event->type){
     case BLE_GAP_EVENT_CONNECT:
+        ESP_LOGI("nordic_ble","connect status=%d",event->connect.status);
         if(!event->connect.status){
             uint16_t h=event->connect.conn_handle;
             xSemaphoreTake(lock,portMAX_DELAY);
@@ -146,10 +155,11 @@ static int gap_event(struct ble_gap_event *event,void *arg)
             }
             xSemaphoreGive(lock);
             if(!p)ble_gap_terminate(h,BLE_ERR_REM_USER_CONN_TERM);
-            else ble_gap_security_initiate(h);
+            else {int rc=ble_gap_security_initiate(h);ESP_LOGI("nordic_ble","security initiate handle=%u result=%d",h,rc);}
         }
         advertise();break;
     case BLE_GAP_EVENT_DISCONNECT:
+        ESP_LOGI("nordic_ble","disconnect reason=%d",event->disconnect.reason);
         xSemaphoreTake(lock,portMAX_DELAY);
         {peer_t *p=find_peer(event->disconnect.conn.conn_handle);if(p){p->closing=true;p->authenticated=false;}}
         xSemaphoreGive(lock);break;
@@ -168,6 +178,7 @@ static int gap_event(struct ble_gap_event *event,void *arg)
         uint32_t code=pairing_passkey;
         peer_t *p=find_peer(h);if(p)p->pairing=allowed;else allowed=false;
         xSemaphoreGive(lock);
+        ESP_LOGI("nordic_ble","passkey action=%u allowed=%d",event->passkey.params.action,allowed);
         if(!allowed){ble_gap_terminate(h,BLE_ERR_AUTH_FAIL);break;}
         struct ble_sm_io io={.action=BLE_SM_IOACT_DISP,.passkey=code};
         if(ble_sm_inject_io(h,&io))ble_gap_terminate(h,BLE_ERR_AUTH_FAIL);
@@ -176,7 +187,8 @@ static int gap_event(struct ble_gap_event *event,void *arg)
     case BLE_GAP_EVENT_ENC_CHANGE: {
         struct ble_gap_conn_desc desc;uint16_t h=event->enc_change.conn_handle;
         bool found=ble_gap_conn_find(h,&desc)==0;
-        bool secure=!event->enc_change.status&&found&&desc.sec_state.encrypted&&desc.sec_state.authenticated&&desc.sec_state.bonded;
+        ESP_LOGI("nordic_ble","encryption status=%d found=%d encrypted=%d authenticated=%d bonded=%d",event->enc_change.status,found,found?desc.sec_state.encrypted:0,found?desc.sec_state.authenticated:0,found?desc.sec_state.bonded:0);
+        bool secure=!event->enc_change.status&&found&&desc.sec_state.encrypted&&(!REQUIRE_MITM||desc.sec_state.authenticated)&&desc.sec_state.bonded;
         xSemaphoreTake(lock,portMAX_DELAY);
         peer_t *p=find_peer(h);
         bool expired=p&&p->pairing&&esp_timer_get_time()>=pairing_until;
@@ -189,6 +201,7 @@ static int gap_event(struct ble_gap_event *event,void *arg)
         break;
     }
     case BLE_GAP_EVENT_REPEAT_PAIRING:
+        ESP_LOGW("nordic_ble","repeat pairing rejected: peer already has a stored bond");
         // Never replace an existing bond silently; USB forget is required.
         return BLE_GAP_REPEAT_PAIRING_IGNORE;
     case BLE_GAP_EVENT_ADV_COMPLETE:advertise();break;
@@ -383,7 +396,8 @@ esp_err_t ble_console_start(void)
     snprintf(info_json,sizeof(info_json),"{\"protocol_version\":1,\"framing\":1,\"command_max\":191,\"connections\":2,\"device_id\":\"%02x%02x%02x%02x%02x%02x\",\"boot_id\":%u,\"numeric_targets\":true,\"workouts\":true,\"calibrated_targets\":false}",
         mac[0],mac[1],mac[2],mac[3],mac[4],mac[5],(unsigned)snapshot.boot_id);
     ble_hs_cfg.sync_cb=sync_host;ble_hs_cfg.reset_cb=reset_host;
-    ble_hs_cfg.sm_io_cap=BLE_HS_IO_DISPLAY_ONLY;ble_hs_cfg.sm_bonding=1;ble_hs_cfg.sm_mitm=1;ble_hs_cfg.sm_sc=1;
+    ble_hs_cfg.sm_io_cap=REQUIRE_MITM?BLE_HS_IO_DISPLAY_ONLY:BLE_HS_IO_NO_INPUT_OUTPUT;
+    ble_hs_cfg.sm_bonding=1;ble_hs_cfg.sm_mitm=REQUIRE_MITM;ble_hs_cfg.sm_sc=1;
     ble_hs_cfg.sm_our_key_dist=BLE_SM_PAIR_KEY_DIST_ENC|BLE_SM_PAIR_KEY_DIST_ID;
     ble_hs_cfg.sm_their_key_dist=BLE_SM_PAIR_KEY_DIST_ENC|BLE_SM_PAIR_KEY_DIST_ID;
     ble_svc_gap_init();ble_svc_gatt_init();ble_svc_gap_device_name_set("Nordic Ski");

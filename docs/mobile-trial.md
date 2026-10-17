@@ -165,3 +165,24 @@ preset Start/Stop, background cleanup, bonded reconnect without automatic contro
 observer Stop, and forced link loss. No physical ESP was flashed or operated.
 The final iOS JavaScript/Hermes export also passed; native iOS compilation and
 device testing remain unverified.
+
+### Pixel 9 connection check (2026-10-17)
+
+The physical Pixel 9 paired with the ESP using the temporary PIN-free bench
+firmware. ESP diagnostics confirmed a stale stored bond rejected earlier pairing
+attempts; clearing ESP bonds allowed Android to reach BOND_BONDED.
+
+Subsequent app startup checks exposed MTU 23 and resumed status notifications
+arriving mid-message on bonded reconnect. Android now negotiates MTU 247 before
+subscriptions and joins each notification stream at its first complete message
+boundary. Later framing gaps still close the session. Explicit ATT status 17
+resource rejections get at most four whole-message attempts; ambiguous writes
+are never retried. Native failure details are preserved in app diagnostics.
+
+The rebuilt APK passed native adapter/bridge tests and TypeScript checks. The
+physical phone then displayed the shared controller page and six workouts across
+three checks over approximately 30 seconds. Independent USB status confirmed one
+connected viewer, idle, fault 0, no control owner, and relay mask 0. Controls were
+not enabled during this check; phone relay actuation and longer testing remain
+pending. APK SHA-256:
+`4ce1d119cfda5d0d7c7e80c98603909d52f0e8308f1d1656a4dc07fe8cfd8761`.

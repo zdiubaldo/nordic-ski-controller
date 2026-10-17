@@ -30,6 +30,7 @@ export class BleTransport implements Transport {
   bootId?: number;
   pending = new Map<number, {resolve: (reply: Reply) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout>}>();
   listeners: {remove(): void}[] = [];
+  startedStreams = new Set<number>();
   writes: Promise<unknown> = Promise.resolve();
   onState: (state: Snapshot) => void = () => {};
   onCatalog: (catalog: unknown) => void = () => {};
@@ -51,6 +52,10 @@ export class BleTransport implements Transport {
       this.bootId = info.boot_id;
       if (Platform.OS === 'android') await BleManager.createBond(this.id);
       if (this.closed) throw new Error('Connection cancelled');
+      // Android starts at MTU 23. Negotiate before subscriptions so the ESP can
+      // deliver complete status snapshots promptly instead of 12-byte fragments.
+      if (Platform.OS === 'android') await BleManager.requestMTU(this.id, 247);
+      if (this.closed) throw new Error('Connection cancelled');
       this.listeners.push(BleManager.onDisconnectPeripheral(event => {
         if (event.peripheral === this.id) this.fail('Bluetooth disconnected; reconnect explicitly');
       }));
@@ -59,6 +64,16 @@ export class BleTransport implements Transport {
         const index = UUID.indexOf(event.characteristic.toLowerCase());
         if (index < 3 || index > 5) return;
         try {
+          // Bonded CCCDs can resume a stream before Android finishes subscribing.
+          // Join at its next complete message, then enforce strict framing.
+          const offset = event.value[6] | event.value[7] << 8;
+          if (!this.startedStreams.has(index)) {
+            if (offset !== 0) {
+              console.info(`[NordicBLE] waiting for message boundary: stream=${index - 1} offset=${offset}`);
+              return;
+            }
+            this.startedStreams.add(index);
+          }
           const message = this.receiver.feed(event.value, index - 1);
           if (!message) return;
           if (message.kind === 2) {
@@ -69,7 +84,11 @@ export class BleTransport implements Transport {
             this.onState(message.value);
           }
           else this.onCatalog(message.value);
-        } catch { this.fail('Invalid Bluetooth data; reconnect'); void BleManager.disconnect(this.id).catch(() => {}); }
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error);
+          console.warn(`[NordicBLE] notification rejected: ${reason}; stream=${index - 1} bytes=${event.value.length} offset=${event.value[6] | event.value[7] << 8}`);
+          this.fail(`Invalid Bluetooth data: ${reason}`); void BleManager.disconnect(this.id).catch(() => {});
+        }
       }));
       for (const characteristic of UUID.slice(3)) {
         if (this.closed) throw new Error('Connection cancelled');
@@ -89,15 +108,27 @@ export class BleTransport implements Transport {
       this.pending.set(id, {resolve, reject, timer});
       const write = async () => {
         if (this.closed) throw new Error('Bluetooth disconnected');
-        // Always use 20-byte ATT values. Never retry ambiguous writes or split headers.
-        for (const packet of frames(body, id)) {
-          if (this.closed || !this.pending.has(id)) throw new Error('Request expired');
-          await BleManager.write(this.id, UUID[0], UUID[2], packet, 20);
+        // ATT 17 explicitly rejects the fragment before the ESP queues a command.
+        // Restart its frame assembly only for that response, never ambiguous errors.
+        for (let attempt=0; attempt<4; attempt++) {
+          try {
+            for (const packet of frames(body, id)) {
+              if (this.closed || !this.pending.has(id)) throw new Error('Request expired');
+              await BleManager.write(this.id, UUID[0], UUID[2], packet, 20);
+            }
+            return;
+          } catch (error) {
+            const reason = error instanceof Error ? error.message : String(error);
+            console.warn(`[NordicBLE] GATT write rejected: ${reason}`);
+            if (attempt===3 || !/^Error writing [a-f0-9-]+ status=17$/i.test(reason)) throw error;
+            await new Promise(resolve=>setTimeout(resolve,50*(attempt+1)));
+          }
         }
       };
-      this.writes = this.writes.then(write).catch(() => {
+      this.writes = this.writes.then(write).catch((error) => {
         const pending = this.pending.get(id);
-        if (pending) { clearTimeout(pending.timer); this.pending.delete(id); pending.reject(new Error('Bluetooth write failed; reconnect and check status')); }
+        const reason = error instanceof Error ? error.message : String(error);
+        if (pending) { clearTimeout(pending.timer); this.pending.delete(id); pending.reject(new Error(`Bluetooth write failed: ${reason}`)); }
       });
     });
   }
